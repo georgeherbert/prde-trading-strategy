@@ -32,10 +32,12 @@ Automated Trading, Financial Markets, Adaptive Trader-Agents
 
 \section{Introduction}
 
+\subsection{Trader-Agents}
+
 Parameterized-Response Zero Intelligence (PRZI) traders \cite{CliffMetapopulation} are a nonadaptive generalisation of ZIC \cite{GodeSunder} traders---the difference lies in the probability mass function (PMF) used to generate quote prices.
 Each individual ZIC trader samples their quote price from a fixed uniform distribution, whereas each PRZI trader is governed by a strategy parameter $s\in[-1, 1]\in\mathbb{R}$ that determines the PMF the trader samples from; the shape of this PMF determines how `urgent' or `relaxed' the trader acts.
 As $s\to1$ the distribution is evermore biased towards `urgent' quote prices---those closest to the least profitable price for the trader, but most likely to attract a willing counterparty---conversely, as $s\to-1$, the distribution is biased towards `relaxed' quote prices---those that generate the most profit for the trader, but are considerably less likely to attract a counterparty.
-When $s=0$, the PMF is uniform---identical to that of a ZIC trader.
+When $s=0$, the PMF is uniform, identical to that of a ZIC trader.
 
 PRZI Stochastic Hillclimber (PRSH) \cite{CliffMetapopulation} is an extension to the PRZI automated-trader algorithm.
 The strategy parameter $s$ is dynamically altered by the algorithm in an attempt to increase profitability.
@@ -45,9 +47,11 @@ The most profitable strategy $s_0$ is `mutated' $k-1$ times---these $k$ values c
 Parameterized-Response Zero Intelligence (PRDE) is further extension of the PRZI algorithm, and a successor to PRSH; it replaces the simple stochastic hill-climber with a differential evolution (DE) optimisation system \cite{StornPrice}.
 Each PRDE trader maintains its own DE system with a population of candidate $s$-values of size $\mathrm{NP}\ge4$.
 
-\section{Differential Evolution}
+\subsection{Differential Evolution}
 
 In a DE system there are a population of candidate solutions; in PRDE, each of these candidate solutions is a stratgey parameter $s\in[-1,1]$.
+
+\section{Experiments}
 
 \cite{BSE} \cite{BSEPaper}
 

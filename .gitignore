@@ -435,3 +435,10 @@ TSWLatexianTemp*
 
 # VS Code
 .vscode/*
+
+# BSE .csv files
+**/test_avg_balance.csv
+**/test_blotters.csv
+**/test_LOB_frames.csv
+**/test_strats.csv
+**/test_tape.csv
