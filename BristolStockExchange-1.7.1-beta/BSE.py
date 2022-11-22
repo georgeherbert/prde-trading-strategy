@@ -665,6 +665,7 @@ class Trader_PRZI(Trader):
         # unpack the params
         if type(params) is dict:
             k = params['k']
+            f = params['F'] if 'F' in params else None
             optimizer = params['optimizer']
             s_min = params['strat_min']
             s_max = params['strat_max']
@@ -675,6 +676,7 @@ class Trader_PRZI(Trader):
 
         self.optmzr = optimizer     # this determines whether it's PRZI, PRSH, or PRDE
         self.k = k                  # number of sampling points (cf number of arms on a multi-armed-bandit, or pop-size)
+        self.f = f
         self.theta0 = 100           # threshold-function limit value
         self.m = 4                  # tangent-function multiplier
         self.strat_wait_time = 7200     # how many secs do we give any one strat before switching?
@@ -694,7 +696,7 @@ class Trader_PRZI(Trader):
                          's0_index': self.active_strat,    # s0 starts out as active strat
                          'snew_index': self.k,             # (k+1)th item of strategy list is DE's new strategy
                          'snew_stratval': None,            # assigned later
-                         'F': 0.8                          # differential weight -- usually between 0 and 2
+                         'F': self.f                       # differential weight -- usually between 0 and 2
         }
 
         start_time = time
@@ -1583,7 +1585,7 @@ def populate_market(traders_spec, traders, shuffle, verbose):
                     parameters = {'optimizer': 'PRSH', 'k': trader_params['k'],
                                   'strat_min': trader_params['s_min'], 'strat_max': trader_params['s_max']}
                 elif ttype == 'PRDE':
-                    parameters = {'optimizer': 'PRDE', 'k': trader_params['k'],
+                    parameters = {'optimizer': 'PRDE', 'k': trader_params['k'], 'F': trader_params['F'],
                                   'strat_min': trader_params['s_min'], 'strat_max': trader_params['s_max']}
                 else: # ttype=PRZI
                     parameters = {'optimizer': None, 'k': 1,
