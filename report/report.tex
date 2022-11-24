@@ -32,28 +32,37 @@ Automated Trading, Financial Markets, Adaptive Trader-Agents
 
 \section{Introduction}
 
-\subsection{Trader-Agents}
-
-Parameterized-Response Zero Intelligence (PRZI) traders \cite{CliffMetapopulation} are a nonadaptive generalisation of ZIC \cite{GodeSunder} traders---the difference lies in the probability mass function (PMF) used to generate quote prices.
+Parameterized-Response Zero Intelligence (PRZI) \cite{PRZI} traders are a nonadaptive generalisation of ZIC \cite{GodeSunder} traders---the difference lies in the probability mass function (PMF) used to generate quote prices.
 Each individual ZIC trader samples their quote price from a fixed uniform distribution, whereas each PRZI trader is governed by a strategy parameter $s\in[-1, 1]\in\mathbb{R}$ that determines the PMF the trader samples from; the shape of this PMF determines how `urgent' or `relaxed' the trader acts.
 As $s\to1$ the distribution is evermore biased towards `urgent' quote prices---those closest to the least profitable price for the trader, but most likely to attract a willing counterparty---conversely, as $s\to-1$, the distribution is biased towards `relaxed' quote prices---those that generate the most profit for the trader, but are considerably less likely to attract a counterparty.
 When $s=0$, the PMF is uniform, identical to that of a ZIC trader.
 
-PRZI Stochastic Hillclimber (PRSH) \cite{CliffMetapopulation} is an extension to the PRZI automated-trader algorithm.
+PRZI Stochastic Hillclimber (PRSH) \cite{PRSH} is an extension to the PRZI automated-trader algorithm.
 The strategy parameter $s$ is dynamically altered by the algorithm in an attempt to increase profitability.
 Each PRSH trader maintains a private local population $\mathcal{K}$ of $k$ strategy parameters; each of which it evaluates for a specific period of time via a loop to identify which is most profitable.
 The most profitable strategy $s_0$ is `mutated' $k-1$ times---these $k$ values comprise the new elements of set $\mathcal{K}$.
 
-Parameterized-Response Zero Intelligence (PRDE) is further extension of the PRZI algorithm, and a successor to PRSH; it replaces the simple stochastic hill-climber with a differential evolution (DE) optimisation system \cite{StornPrice}.
-Each PRDE trader maintains its own DE system with a population of candidate $s$-values of size $\mathrm{NP}\ge4$.
+Parameterized-Response Zero Intelligence (PRDE) \cite{PRDE} is further extension of the PRZI algorithm, and a successor to PRSH; it replaces the simple stochastic hill-climber with a differential evolution (DE) optimisation system \cite{StornPrice}.
+Each PRDE trader maintains its own DE system with a population of candidate $s$-values of size $\mathrm{NP}\ge4$, which for trader $i$ can be denoted by $s_{i,1},s_{i,2},...,s_{i,\mathrm{NP}}$.
+Once a particular strategy $s_{i,x}$ has been evaluated, three other distinct $s$-value are chosen at random from the population maintained by trader $i$: $s_{i,a}$, $s_{i,b}$ and $s_{i,c}$ such that $x\ne a\ne b\ne c$.
+A new candidate strategy $s_{i,y}$ is constructed as follows:
+\[
+s_{i,y}=\max(\min(s_{i,a}+F_i(s_{i,b}-s_{i,c}),1), -1)
+\]
+where $F_i$ is the trader's differential weight coefficient.
+This is very similar to the standard DE/rand/1 algorithm, with addition $\max$ and $\min$ functions to constrain the output $s_{i,y}\in[-1,1]$.
+The fitness of $s_{i,y}$ is evaluated and if it performs better than $s_{i,x}$ then $s_{i,y}$ replaces $s_{i,x}$; otherwise, it is discarded and then the next strategy is evaluated.
+Cliff made one additional modification to the implementation of DE/rand/1 algorithm in PRDE to deal with convergence issues that arised from $s_{i,b}-s_{i,c}$ tending very close to zero.
+He introduced a simple vector-perbutation mechanism: if at any time the standard deviation of candidate $s$-value's in trader $i$'s private population is less than $0.0001$, then a randomly selected candidate is selected and provided a value drawn at random from the uniform distribution $U(-1,1)$.
 
-\subsection{Differential Evolution}
+Current experiments published by Cliff did not deviate from $F=0.8$ and $\mathrm{NP}=4$ (i.e. the minimum viable value).
+Current experiments ran by Cliff have been performed on the Bristol Stock Exchange (\textit{BSE}) (see \cite{BSE, BSEPaper}).
 
-In a DE system there are a population of candidate solutions; in PRDE, each of these candidate solutions is a stratgey parameter $s\in[-1,1]$.
+\section{Exploration of $k$ and $F$}
 
-\section{Experiments}
 
-\cite{BSE} \cite{BSEPaper}
+
+\section{Extending PRDE}
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
