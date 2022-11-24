@@ -437,8 +437,8 @@ TSWLatexianTemp*
 .vscode/*
 
 # BSE .csv files
-**/test_avg_balance.csv
-**/test_blotters.csv
-**/test_LOB_frames.csv
-**/test_strats.csv
-**/test_tape.csv
+**/*_avg_balance.csv
+**/*_blotters.csv
+**/*_LOB_frames.csv
+**/*_strats.csv
+**/*_tape.csv
