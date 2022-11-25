@@ -63,22 +63,30 @@ The fitness of $s_{i,y}$ is evaluated and if it performs better than $s_{i,x}$ t
 Cliff made one additional modification to his implementation of DE/rand/1 algorithm in PRDE to deal with convergence issues that arised from $s_{i,b}-s_{i,c}$ tending very close to zero.
 He introduced a simple vector-perbutation mechanism: if at any time the standard deviation of the candidate $s$-values in trader $i$'s private population is less than $0.0001$, then a randomly selected candidate is provided a value drawn at random from the uniform distribution $U(-1,1)$.
 
-Cliff published experiments he ran on the \textit{Bristol Stock Exchange} (BSE) (see \cite{BSE, BSEPaper}) to analyse and evaluate PRSH and PRDE.
+Cliff's conducted experiments on the \textit{Bristol Stock Exchange} (BSE) (see \cite{BSE, BSEPaper}) to analyse and evaluate PRSH and PRDE.
 BSE is a freely-available, open-source simulation a LOB-based financial exchange.
 Notably, Cliff identified that markets populated by PRDE traders were approximately 100\% more economically efficient than those populated by PRSH traders \cite{PRDE}.
 However, the PRDE traders implemented in Cliff's experiments did not deviate from a differential weight of $F=0.8$ and a number in population of $\mathrm{NP}=4$ (i.e. the minimum viable value).
 He stressed the importance of future work to explore the effects on the market's dynamics of altering these key parameters.
-
-\section{Exploration of $\mathrm{NP}$ and $F$}
-
-In Cliff's paper introducing PRDE, he proposed two lines of future research regarding exploration of different values for the differential weight coefficient $F$ and the number in population $\mathrm{NP}$ \cite{PRDE}.
-He proposed an exploration into the effects on the market's dynamics of altering the two key parameters homogenously---with all traders maintaining the same values of $F$ and $\mathrm{NP}$.
+Cliff proposed two lines of future research regarding exploration of different values for the differential weight coefficient and the number in population.
+He proposed an exploration into the effects on the market's dynamics of altering the two key parameters homogeneously---with all traders maintaining the same values of $F$ and $\mathrm{NP}$.
 He also proposed an arguably more intriguing exploration into effects that arise from altering the two key parameters heterogeneously---with different traders being provided different values of $F$ and $\mathrm{NP}$.
 
-My initial experiments in this paper focus on the former exploration.
-To maintain consistency with Cliff, I also conducted my experiments on BSE, with a similar experimental setup.
-In each experiment, I implemented a homogenous population of 30 PRDE traders---15 buyers and 15 sellers---with identical values for $F$ and $\mathrm{NP}$.
-I used profit per unit time as a measure of market efficiency, namely profit per second (PPS).
+\section{Homogeneous Exploration of $F$ and $\mathrm{NP}$}
+
+My initial experiments in this paper focus on the effect of altering the number in population $\mathrm{NP}$.
+To do so, I designed a set of experiments with a similar setup as Cliff \cite{PRDE}.
+In each experiment, I implemented a homogeneous population of $N_T=30$ PRDE traders with an equal number of buyers and sellers.
+The population was homogenous with respect to the fact that each trader had an equal differential weight coefficient of $F=0.8$, and an equal number in population $\mathrm{NP}$, which I altered for each experiment.
+Each experiment had perfect elasticity of supply and demand: all buyers had a limit price of \$140 per unit, whilst all sellers had a limit price of \$60.
+After two traders engaged in a trade, they were rendered inactive until their stock was replenished, which occurred approximately every five seconds.
+I ran each experiment for 50 simulated days.
+I used profit per unit time as a measure of market efficiency; more specifically, I used profit per second (PPS).
+The PPS was computed every $\Delta t=3600$ seconds, by dividing the total profit a given trader achieved during the prior $\Delta t$ seconds by $\Delta t$.
+
+
+
+\section{Heterogeneous Exploration of $F$ and $\mathrm{NP}$}
 
 \section{Extending PRDE}
 
