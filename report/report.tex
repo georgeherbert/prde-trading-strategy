@@ -32,17 +32,25 @@ Automated Trading, Financial Markets, Adaptive Trader-Agents
 
 \section{Introduction}
 
-Parameterized-Response Zero Intelligence (PRZI) \cite{PRZI} traders are a nonadaptive generalisation of ZIC \cite{GodeSunder} traders---the difference lies in the probability mass function (PMF) used to generate quote prices.
+Automated trading accounts for an unprecedented amount of activity in modern financial markets.
+These algorithms have the ability to execute trades at a frequency simply unachievable for humans beings; thus, the behaviour of many of these markets has fundamentally shifted.
+Notably, the `flash crash' in US financial markets on 6 May 2010 has been partially attributed to high-frequency trading algorithms aggressively reselling short-term positions to one another.
+Many automated trading algorithms have the additional quality of being adaptive: they adjust their strategy to extract maximum profit from the market in which they are operating.
+Cliff \cite{PRDE} described these contemporary markets---in which competing adaptive algorithms are simultaneously engaged in coninual adjustment to maintain profitability---as co-evolutionary systems.
+
+Large amounts of research has been conducted to understand the dynamics of these markets.
+Recently, Cliff introduced the Parameterized-Response Zero-Intelligence (PRZI) \cite{PRZI} trader: a nonadaptive generalisation of the ZIC \cite{GodeSunder} trader---the difference lies in the probability mass function (PMF) used to generate quote prices.
 Each individual ZIC trader samples their quote price from a fixed uniform distribution, whereas each PRZI trader is governed by a strategy parameter $s\in[-1, 1]\in\mathbb{R}$ that determines the PMF the trader samples from; the shape of this PMF determines how `urgent' or `relaxed' the trader acts.
 As $s\to1$ the distribution is evermore biased towards `urgent' quote prices---those closest to the least profitable price for the trader, but most likely to attract a willing counterparty---conversely, as $s\to-1$, the distribution is biased towards `relaxed' quote prices---those that generate the most profit for the trader, but are considerably less likely to attract a counterparty.
 When $s=0$, the PMF is uniform, identical to that of a ZIC trader.
 
-PRZI Stochastic Hillclimber (PRSH) \cite{PRSH} is an extension to the PRZI automated-trader algorithm.
+PRZI Stochastic Hillclimber (PRSH) \cite{PRSH} is an extension to the PRZI automated-trader algorithm, also introduced by Cliff.
 The strategy parameter $s$ is dynamically altered by the algorithm in an attempt to increase profitability.
 Each PRSH trader maintains a private local population $\mathcal{K}$ of $k$ strategy parameters; each of which it evaluates for a specific period of time via a loop to identify which is most profitable.
 The most profitable strategy $s_0$ is `mutated' $k-1$ times---these $k$ values comprise the new elements of set $\mathcal{K}$.
 
-Parameterized-Response Zero Intelligence (PRDE) \cite{PRDE} is further extension of the PRZI algorithm, and a successor to PRSH; it replaces the simple stochastic hill-climber with a differential evolution (DE) optimisation system \cite{StornPrice}.
+PRZI Differential Evolution (PRDE) \cite{PRDE} is further extension of the PRZI algorithm, and a successor to PRSH; it is the most recent algorithm published by Cliff in the PRZI `family' of trader-agents.
+It replaces the simple stochastic hill-climber with a differential evolution (DE) optimisation system \cite{StornPrice}.
 Each PRDE trader maintains its own DE system with a population of candidate $s$-values of size $\mathrm{NP}\ge4$, which for trader $i$ can be denoted by $s_{i,1},s_{i,2},...,s_{i,\mathrm{NP}}$.
 Once a particular strategy $s_{i,x}$ has been evaluated, three other distinct $s$-value are chosen at random from the population maintained by trader $i$: $s_{i,a}$, $s_{i,b}$ and $s_{i,c}$ such that $x\ne a\ne b\ne c$.
 A new candidate strategy $s_{i,y}$ is constructed as follows:
@@ -50,17 +58,27 @@ A new candidate strategy $s_{i,y}$ is constructed as follows:
 s_{i,y}=\max(\min(s_{i,a}+F_i(s_{i,b}-s_{i,c}),1), -1)
 \]
 where $F_i$ is the trader's differential weight coefficient.
-This is very similar to the standard DE/rand/1 algorithm, with addition $\max$ and $\min$ functions to constrain the output $s_{i,y}\in[-1,1]$.
+This is very similar to the standard DE/rand/1 algorithm, with addition of $\max$ and $\min$ functions to constrain the output $s_{i,y}\in[-1,1]$.
 The fitness of $s_{i,y}$ is evaluated and if it performs better than $s_{i,x}$ then $s_{i,y}$ replaces $s_{i,x}$; otherwise, it is discarded and then the next strategy is evaluated.
-Cliff made one additional modification to the implementation of DE/rand/1 algorithm in PRDE to deal with convergence issues that arised from $s_{i,b}-s_{i,c}$ tending very close to zero.
-He introduced a simple vector-perbutation mechanism: if at any time the standard deviation of candidate $s$-value's in trader $i$'s private population is less than $0.0001$, then a randomly selected candidate is selected and provided a value drawn at random from the uniform distribution $U(-1,1)$.
+Cliff made one additional modification to his implementation of DE/rand/1 algorithm in PRDE to deal with convergence issues that arised from $s_{i,b}-s_{i,c}$ tending very close to zero.
+He introduced a simple vector-perbutation mechanism: if at any time the standard deviation of the candidate $s$-values in trader $i$'s private population is less than $0.0001$, then a randomly selected candidate is provided a value drawn at random from the uniform distribution $U(-1,1)$.
 
-Current experiments published by Cliff did not deviate from $F=0.8$ and $\mathrm{NP}=4$ (i.e. the minimum viable value).
-Current experiments ran by Cliff have been performed on the Bristol Stock Exchange (\textit{BSE}) (see \cite{BSE, BSEPaper}).
+Cliff published experiments he ran on the \textit{Bristol Stock Exchange} (BSE) (see \cite{BSE, BSEPaper}) to analyse and evaluate PRSH and PRDE.
+BSE is a freely-available, open-source simulation a LOB-based financial exchange.
+Notably, Cliff identified that markets populated by PRDE traders were approximately 100\% more economically efficient than those populated by PRSH traders \cite{PRDE}.
+However, the PRDE traders implemented in Cliff's experiments did not deviate from a differential weight of $F=0.8$ and a number in population of $\mathrm{NP}=4$ (i.e. the minimum viable value).
+He stressed the importance of future work to explore the effects on the market's dynamics of altering these key parameters.
 
-\section{Exploration of $k$ and $F$}
+\section{Exploration of $\mathrm{NP}$ and $F$}
 
+In Cliff's paper introducing PRDE, he proposed two lines of future research regarding exploration of different values for the differential weight coefficient $F$ and the number in population $\mathrm{NP}$ \cite{PRDE}.
+He proposed an exploration into the effects on the market's dynamics of altering the two key parameters homogenously---with all traders maintaining the same values of $F$ and $\mathrm{NP}$.
+He also proposed an arguably more intriguing exploration into effects that arise from altering the two key parameters heterogeneously---with different traders being provided different values of $F$ and $\mathrm{NP}$.
 
+My initial experiments in this paper focus on the former exploration.
+To maintain consistency with Cliff, I also conducted my experiments on BSE, with a similar experimental setup.
+In each experiment, I implemented a homogenous population of 30 PRDE traders---15 buyers and 15 sellers---with identical values for $F$ and $\mathrm{NP}$.
+I used profit per unit time as a measure of market efficiency, namely profit per second (PPS).
 
 \section{Extending PRDE}
 
