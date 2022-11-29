@@ -30,7 +30,7 @@ This paper reports results from market experiments containing Paramaterized-Resp
 Each PRDE trader-agent in a market simultaneously uses differential evolution (DE) to adapt their own trading strategy to maximise profitability.
 The DE algorithm within each PRDE trader is governed by two parameters: the differential weight coefficient $F$ and the number in population $\mathrm{NP}$.
 Markets containing a homogeneous population of PRDE traders exhibit different dynamics depending on the values of $F$ and $\mathrm{NP}$
-The first part of this paper evaluates the effect that these two parameters have on the dynamics of a coevolutionary market containing PRDE trader-agents; while the latter part of this paper proposes an extension to the PRDE algorithm to further maximise profitability.
+The first part of this paper evaluates the effect that these two parameters have on the dynamics of the market; while the latter part of this paper proposes an extension to the PRDE algorithm to further maximise profitability.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -43,35 +43,32 @@ Automated trading accounts for an unprecedented amount of activity in modern fin
 These algorithms have the ability to execute trades at a frequency simply unachievable for humans beings; thus, the behaviour of many of these markets has significantly shifted.
 Notably, the `flash crash' in US financial markets on 6 May 2010 has been partially attributed to high-frequency trading algorithms aggressively reselling short-term positions to one another.
 Modern automated trading algorithms have the additional quality of being adaptive: they adjust their strategy to extract maximum profit from the market in which they are operating.
-These contemporary markets---in which competing adaptive algorithms are simultaneously engaged in coninual adjustment to maintain profitability---can be described as coevolutionary systems.
+These contemporary markets---in which competing adaptive algorithms are simultaneously engaged in coninual adjustment to maintain profitability---can be described as \textit{coevolutionary} systems.
 
 Large amounts of research has been conducted to understand the dynamics of these markets.
-Recently, Cliff introduced the Parameterized-Response Zero-Intelligence (PRZI) \cite{PRZI} trader: a nonadaptive generalisation of Gode and Sunder's Zero-Intelligence Constrained (ZIC) \cite{GodeSunder} trader.
+Recently, Cliff introduced the \textit{Parameterized-Response Zero-Intelligence} (PRZI) \cite{PRZI} trader: a nonadaptive generalisation of Gode and Sunder's Zero-Intelligence Constrained (ZIC) \cite{GodeSunder} trader.
 The difference lies in the probability mass function (PMF) used to generate quote prices.
 Each individual ZIC trader samples their quote price from a fixed uniform distribution, whereas each PRZI trader is governed by a strategy parameter $s\in[-1, 1]\in\mathbb{R}$ that determines the PMF the trader samples from; the shape of this PMF determines how `urgent' or `relaxed' the trader acts.
 As $s\to1$ the distribution is evermore biased towards `urgent' quote prices---those closest to the least profitable price for the trader, but most likely to attract a willing counterparty---conversely, as $s\to-1$, the distribution is biased towards `relaxed' quote prices---those that generate the most profit for the trader, but are considerably less likely to attract a counterparty.
 When $s=0$, the PMF is uniform, identical to that of a ZIC trader.
 
-PRZI Stochastic Hillclimber (PRSH) \cite{PRSH} is an extension to the PRZI automated-trader algorithm, also introduced by Cliff.
+\textit{PRZI Stochastic Hillclimber} (PRSH) \cite{PRSH} is an adaptive extension to the PRZI also introduced by Cliff.
 The strategy parameter $s$ is dynamically altered by the algorithm in an attempt to increase profitability.
 Each PRSH trader maintains a private local population $\mathcal{K}$ of $k$ strategy parameters; each of which it evaluates for a specific period of time via a loop to identify which is most profitable.
-The most profitable strategy $s_0$ is `mutated' $k-1$ times---these $k$ values comprise the new elements of set $\mathcal{K}$.
+The most profitable strategy $s_0$ is `mutated' $k-1$ times; these $k$ values comprise the new elements of set $\mathcal{K}$.
 
-PRZI Differential Evolution (PRDE) \cite{PRDE} is further extension of the PRZI algorithm, and a successor to PRSH; it is the most recent algorithm published by Cliff in the PRZI `family' of trader-agents.
-It replaces the simple stochastic hill-climber with a differential evolution (DE) optimisation system \cite{StornPrice}.
-Each PRDE trader maintains its own DE system with a population of candidate $s$-values of size $\mathrm{NP}\ge4$, which for trader $i$ can be denoted by $s_{i,1},s_{i,2},...,s_{i,\mathrm{NP}}$.
+\textit{PRZI Differential Evolution} (PRDE) \cite{PRDE} is further adaptive extension of the PRZI algorithm, and a successor to PRSH; it is the most recent algorithm published by Cliff in the PRZI `family' of trader-agents.
+It replaces the simple stochastic hill-climber with a \textit{differential evolution} (DE) optimisation system \cite{StornPrice}.
+Each PRDE trader maintains its own DE system with a population of candidate $s$-values of size $\mathrm{NP}\ge4$, which for trader $i$ can be denoted by $s_{i,1},s_{i,2},...,s_{i,\mathrm{NP}}$; the value $\mathrm{NP}$ is referred to as the \textit{number in population}.
 Once a particular strategy $s_{i,x}$ has been evaluated, three other distinct $s$-value are chosen at random from the population maintained by trader $i$: $s_{i,a}$, $s_{i,b}$ and $s_{i,c}$ such that $x\ne a\ne b\ne c$.
 A new candidate strategy $s_{i,y}$ is constructed as follows:
 \[
 s_{i,y}\leftarrow\max(\min(s_{i,a}+F_i(s_{i,b}-s_{i,c}),1), -1)
 \]
-where $F_i$ is the trader's differential weight coefficient.
-The fitness of $s_{i,y}$ is evaluated and if it performs better than $s_{i,x}$ then $s_{i,y}$ replaces $s_{i,x}$; otherwise, it is discarded and then the next strategy is evaluated.
-This is very similar to the original description of the DE/rand/1 algorithm as described by Storn and Price \cite{StornPrice}, with a four key differences.
-Firstly, $\max$ and $\min$ functions have been incorporated to constrain the output $s_{i,y}\in[-1,1]$.
-Secondly, the conventional DE notion of crossover is not relevant because the behaviour of each PRZE trader is governed by only a single scalar value $s$.
-Thirdly, the DE algorithm in PRDE is a steady-state evolutionary algorithm as opposed to a generational evolutionary algorithm, which provides a small storage advantage.
-Finally, Cliff introduced introduced a simple vector-perbutation mechanism to deal with convergence issues that arised from $s_{i,b}-s_{i,c}$ tending very close to zero: if at any time the standard deviation of the candidate $s$-values in trader $i$'s private population is less than $0.0001$, then a randomly selected candidate is provided a value drawn at random from the uniform distribution $\mathcal{U}(-1,1)$.
+where $F_i$ is the trader's \textit{differential weight} coefficient.
+The fitness of $s_{i,y}$ is evaluated and if it performs better than $s_{i,x}$ then $s_{i,y}$ replaces $s_{i,x}$; otherwise, it is discarded and the next randomly selected strategy is evaluated.
+This is very similar to the original description of the DE/rand/1 algorithm as described by Storn and Price \cite{StornPrice}, with a four key differences: $\max$ and $\min$ functions have been incorporated to constrain the output $s_{i,y}$ to the range $[-1,1]$; the conventional DE notion of crossover is not relevant because the behaviour of each PRZE trader is governed by only a single scalar value $s$; the DE algorithm in PRDE is a steady-state evolutionary algorithm as opposed to a generational evolutionary algorithm, which provides a small storage advantage; and Cliff introduced a simple vector-perbutation mechanism to deal with convergence issues that arised from $s_{i,b}-s_{i,c}$ tending very close to zero.
+The vector-perbutation mechanism works as follows: if at any time the standard deviation of the candidate $s$-values in trader $i$'s private population is less than $0.0001$, then a randomly selected candidate is provided a value drawn at random from the uniform distribution $\mathcal{U}(-1,1)$.
 This can be thought of a `mega-mutation' to the trader's set of $s$-values---a countermeasure to convergence.
 
 Cliff's conducted experiments on the \textit{Bristol Stock Exchange} (BSE) (see \cite{BSE, BSEPaper}) to analyse the coevolutionary dynamics of markets populated entirely by PRSH and PRDE traders.
@@ -79,8 +76,8 @@ BSE is a freely-available, open-source simulation a LOB-based financial exchange
 Notably, Cliff identified that markets populated by PRDE traders were approximately 100\% more economically efficient than those populated by PRSH traders \cite{PRDE}.
 However, the PRDE traders implemented in Cliff's experiments did not deviate from a differential weight of $F=0.8$ and a number in population of $\mathrm{NP}=4$ (i.e. the minimum viable value).
 He stressed the importance of future work to explore the effects on the market's dynamics of altering these key parameters.
-Cliff proposed two lines of future research regarding exploration of different values for $F$ and $\mathrm{NP}$.
-He proposed an exploration into the effects on the market's dynamics of altering the two key parameters homogeneously---with all traders maintaining the same values of $F$ and $\mathrm{NP}$.
+Cliff proposed two lines of future research.
+He proposed an exploration into the effects on the market's dynamics of altering the two key parameters homogeneously---with all traders maintaining the same values of $F$ and $\mathrm{NP}$ in a given market session.
 He also proposed an arguably more intriguing exploration into effects that arise from altering the two key parameters heterogeneously---with different traders being provided different values of $F$ and $\mathrm{NP}$.
 
 \section{Homogeneous Exploration of $F$ and $\mathrm{NP}$}
@@ -88,14 +85,20 @@ He also proposed an arguably more intriguing exploration into effects that arise
 \subsection{Number in Population $\mathrm{NP}$}
 
 My initial experiments in this paper focus on the effect that the number in population $\mathrm{NP}$ has on the dynamic of a coevolutionary market.
-To do so, I designed a set of experiments with a similar setup as Cliff \cite{PRDE}.
+To do so, I designed a set of experiments with a similar setup as Cliff \cite{PRDE} using BSE.
 Each experiment had perfect elasticity of supply and demand: all buyers had a limit price of \$140 per unit, whilst all sellers had a limit price of \$60.
 After two traders engaged in a trade, they were rendered inactive until their stock was replenished, which occurred approximately every five seconds.
 I ran each experiment for 100 simulated days on an Apple MacBook Pro with the M1 Pro chip, which took approximately 3 hours running at 800x real-time.
 In each experiment, I implemented a homogeneous population of $N_T=30$ PRDE traders with an equal number of buyers $N_B$ and sellers $N_S$ (i.e. $N_B=N_S=15$).
 The population was homogenous with respect to the fact that each trader had an equal differential weight coefficient of $F=0.8$, and an equal number in population $\mathrm{NP}$, which I altered for each experiment.
-Figure \ref{NP_profit} displays the relationship between the total profit extracted from the market and the number in population $\mathrm{NP}$ for the experimental setup described.
-There is an evident negative correlation between $\mathrm{NP}$ and the total profit extracted from the market.
+
+Figure \ref{NP_profit} displays the relationship between the total profit extracted from the market and the number in population $\mathrm{NP}$ for the experimental setup described; there is an evident negative correlation between $\mathrm{NP}$ and the total profit extracted.
+The negative correlation evident from these experiments indicates that markets containing homogeneous PRDE traders with larger private populations $\mathrm{NP}$ are less efficient.
+This can be primarily attributed to an increasingly lengthy adaptive transient at the beginning of the market session.
+The initial adaptive transient that occurs in homogenous markets of PRDE traders was first reported on by Cliff \cite{PRDE}.
+There is a pattern in the total profit per second (PPS) extracted from the market $\pi_T$ by both the buyers and sellers.
+$\pi_T$ follows a two-phase pattern: there is an initial adaptive transient whereby $\pi_T$ increases, followed by a prolonged period whereby $\pi_T$ remains in approximately the same range.
+This two-phase pattern is due to the system's initial random conditions being improved upon until the system settles to an ongoing dynamic in which $\pi_T$ has a zero-sum nature: in general, for the total PPS extracted by the buyers $\pi_B$ to go up, the total profit extracted by the sellers $\pi_S$ must go down, and vice versa.
 
 \begin{figure}[htbp]
     \centering
@@ -131,13 +134,6 @@ There is an evident negative correlation between $\mathrm{NP}$ and the total pro
     }
     \label{NP_profit}
 \end{figure}
-
-The negative correlation evident from these experiments indicates that markets containing homogeneous PRDE traders with larger private populations $\mathrm{NP}$ are less efficient---they extract less profit from the market.
-This can be primarily attributed to an increasingly lengthy adaptive transient at the beginning of the market session.
-The initial adaptive transient that occurs in homogenous markets of PRDE traders was first reported on by Cliff \cite{PRDE}.
-Cliff identified a pattern in the total profit per second (PPS) extracted from the market $\pi_T$ by both the buyers and sellers.
-$\pi_T$ follows a two-phase pattern: there is an initial adaptive transient whereby $\pi_T$ increases, followed by a prolonged period whereby $\pi_T$ remains in approximately the same range.
-This two-phase pattern is due to the system's initial random conditions being improved upon until the system settles to an ongoing dynamic in which $\pi_T$ has a zero-sum nature: in general, for the total PPS extracted by the buyers $\pi_B$ to go up, the total profit extracted by the sellers $\pi_S$ must go down, and vice versa.
 
 Figure \ref{k=4,F=0.8_pps} and Figure \ref{k=64,F=0.8_pps} display the PPS for markets containing homogeneous PRDE traders with $\mathrm{NP=4}$ and $\mathrm{NP}=64$, respectively.
 The PPS was computed every $\Delta t=3600$ seconds, by dividing the total profit a given trader achieved during the prior $\Delta t$ seconds by $\Delta t$.
@@ -178,6 +174,7 @@ Markets containing homogeneous PRDE traders with larger private populations are 
 I conducted a very similar set of experiments to ascertain the effect the differential weight coefficient $F$ has on the dynamic of a coevolutionary market.
 For each experiment I similarly used a homogenous population of PRDE traders; I kept the number in population constant at $\mathrm{NP}=4$ and changed the coefficient $F$ between experiments.
 Figure \ref{F_profit} displays the relationship between the total profit extracted from the market and the differential weight coefficient $F$.
+This relationship is interesting: initially, as $F$ increases from $0$ the total profit slowly increases; the trend breaks when $F$ is in the approximate range $[0.75, 0.95]$, whereby there is a sudden spike in profitability; above this range, and the profitability again reduces.
 
 \begin{figure}[htbp]
     \centering
@@ -200,8 +197,11 @@ Figure \ref{F_profit} displays the relationship between the total profit extract
                     0.4 1400501360 a
                     0.6 1424963200 a
                     0.7 1386720880 a
+                    0.75 1558054080 a
                     0.8 1526963760 a
+                    0.85 1520380480 a
                     0.9 1541195840 a
+                    0.95 1571747360 a
                     1.0 1466603440 a
                     1.2 1463156800 a
                     1.6 1477638720 a
@@ -220,10 +220,10 @@ Figure \ref{F_profit} displays the relationship between the total profit extract
 This relationship can be safely attributed to the strong effect that $F$ has on the distribution of $s$-values in the entire population of PRDE traders.
 Figure \ref{k=4,F=0.0_buy_strats} displays a heatmap of the $s$-values used by the 15 PRDE buyers in a homogeneous market with $F=0$.
 Throughout the 100-day experiment, the distribution of $s$-values remained approximately uniform in the range $[-1, 1]$.
-This was because when $F=0$ the equation to derive a new candidate stratety $s_{i,y}$ for trader $i$ to replace $s_{i,x}$ simply becomes $s_{i,y}\leftarrow s_{i,a}$.
-Therefore, for a given trader $i$, following the evaluation period of $s_{i,y}$, the value of $s_{i,x}$ can either remain the same, or take on the value of $s_{i,y}=s_{i,a}$, in which case two or more of the $s$-values in the local population will be identical---the diversity will be reduced.
+This was because when $F=0$ the equation to derive a new candidate stratety $s_{i,y}$ to replace $s_{i,x}$ simply becomes $s_{i,y}\leftarrow s_{i,a}$.
+Therefore, for a given trader $i$, following the evaluation period of $s_{i,y}$, the value of $s_{i,x}$ can either remain the same, or take on the value of $s_{i,y}=s_{i,a}$, in which case two or more of the $s$-values in the local population will be identical---the `genetic diversity' will be reduced.
 In fact, the only time a new $s$-value can be introduced into trader $i$'s local population is when the diversity of $s$-values becomes so constrained a `mega-mutation' occurs, in which case a new $s$-value is sampled from $\mathcal{U}(-1,1)$.
-As a result, the distribution of $s$-values in the entire population of PRDE traders remains approximately uniform.
+As a result, the distribution of $s$-values in the entire population of PRDE traders remains approximately uniform throughout the 100-day market session.
 This ultimately produces a market containing a wide range of both `urgent' and `relaxed' buyers and sellers, with individual PRDE traders unable to optimise their strategy values.
 The effect of this is an inefficient market.
 While the case of $F=0$ is extreme, I found experimentally that the market increasingly exhibits the inefficient dynamics described here as $F$ tends towards $0$.
@@ -231,7 +231,7 @@ While the case of $F=0$ is extreme, I found experimentally that the market incre
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=\columnwidth]{k=4,F=0.0_buy_strats.png}}
     \caption{
-        Heatmap of individual strategy-values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=0.0$ and $\mathrm{NP}=64$.
+        Heatmap of individual strategy-values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=0$ and $\mathrm{NP}=64$.
         Horizontal axis is time, measured in days; vertial axis is the strategy value pixelated into 40 bins of size 0.05.
         The intensity of pixel shading increases with the number of PRDE sellers in the population currently trading with a strategy value in a given 0.05 range.
         See text for further discussion.
@@ -242,7 +242,7 @@ While the case of $F=0$ is extreme, I found experimentally that the market incre
 On the other extreme of the spectrum when $F=2$, a very different market dynamic manifests.
 Figure \ref{k=4,F=2.0_buy_strats} similarly displays a heatmap of $s$-values for the 15 PRDE buyers whereby $F=2$.
 Unlike the uniform distribution of $s$-values exhibited when $F=0$, the $s$-values were significantly bimodal at the two extremes of $s\approx-1$ and $s\approx1$; moreso, both the buyers and sellers displayed this behaviour.
-This creates to a market dynamic in which at each stage there is a number of both extremely `urgent' and extremely `relaxed' buyers and sellers.
+This creates a market dynamic in which at each stage there is a number of both extremely `urgent' and extremely `relaxed' buyers and sellers.
 This is more efficient than when $F=0$, because the maximally `urgent' buyers will frequently trade with the maximally `relaxed' sellers, and vice versa.
 However, there is still a degree of inefficiency since two maximally `urgent' and two maximally `relaxed' traders cannot trade with one another.
 Furthermore, I found experimentally that for larger values of $F$, this inefficient bimodal behaviour was evermore prominant.
@@ -250,7 +250,7 @@ Furthermore, I found experimentally that for larger values of $F$, this ineffici
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=\columnwidth]{k=4,F=2.0_buy_strats.png}}
     \caption{
-        Heatmap of individual stratey values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=2.0$ and $\mathrm{NP}=64$.
+        Heatmap of individual stratey values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=2$ and $\mathrm{NP}=64$.
         Format is the same as for Figure \ref{k=4,F=0.0_buy_strats}.
         See text for further discussion.
     }
@@ -262,8 +262,9 @@ Figure \ref{k=4,F=0.8_buy_strats} displays a heatmap of individual $s$-values fo
 Arguably, the distribution of the $s$-values in this market exhibits a degree of balance between the two extremes described previously.
 There is a clear dominant mode at $s\approx-1$.
 However, there is also a range of other $s$-values being trialled by the 15 buyers, most of which are greater than zero.
-The distribution of $s$-values for the population of 15 PRDE buyers was the reverse of this.
+The distribution of $s$-values for the population of 15 PRDE sellers was the reverse of this.
 There was a dominant mode at $s\approx 1$, with a range of other $s$-values, most of which were less than zero.
+This distribution appears to consistently produce a market with efficient dynamics: the total population of traders were able to extract more profit from the market.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=\columnwidth]{k=4,F=0.8_buy_strats.png}}
