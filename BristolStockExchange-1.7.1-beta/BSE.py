@@ -1885,6 +1885,10 @@ def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, avg
                     # wtf?
                     sys.exit('unknown trader id type in market_session')
 
+            if trader.ttype == 'PRDE':
+                line_str += 'k=,%f, ' % trader.k
+                line_str += 'f=,%f, ' % trader.f
+
         line_str += 'best_B_id=,%s, best_B_prof=,%f, best_B_strat=,%f, ' % \
                     (best_buyer_id, best_buyer_prof, best_buyer_strat)
         line_str += 'best_S_id=,%s, best_S_prof=,%f, best_S_strat=,%f, ' % \
