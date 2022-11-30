@@ -82,17 +82,37 @@ He also proposed an arguably more intriguing exploration into effects that arise
 
 \section{Homogeneous Exploration of $F$ and $\mathrm{NP}$}
 
-\subsection{Number in Population $\mathrm{NP}$}
+\subsection{Combined Effect of $F$ and $\mathrm{NP}$}
 
-My initial experiments in this paper focus on the effect that the number in population $\mathrm{NP}$ has on the dynamic of a coevolutionary market.
-To do so, I designed a set of experiments with a similar setup as Cliff \cite{PRDE} using BSE.
-Each experiment had perfect elasticity of supply and demand: all buyers had a limit price of \$140 per unit, whilst all sellers had a limit price of \$60.
-After two traders engaged in a trade, they were rendered inactive until their stock was replenished, which occurred approximately every five seconds.
-I ran each experiment for 100 simulated days on an Apple MacBook Pro with the M1 Pro chip, which took approximately 3 hours running at 800x real-time.
-In each experiment, I implemented a homogeneous population of $N_T=30$ PRDE traders with an equal number of buyers $N_B$ and sellers $N_S$ (i.e. $N_B=N_S=15$).
-The population was homogenous with respect to the fact that each trader had an equal differential weight coefficient of $F=0.8$, and an equal number in population $\mathrm{NP}$, which I altered for each experiment.
+My initial experiments in this paper focus on the relationship between the number in population $\mathrm{NP}$ and the differential weight coefficient $F$, and the combined effect that these two values have on the dynamic of a coevolutionary market.
+To do so, I designed a set of experiments with a similar setup as Cliff in \cite{PRDE} in which BSE was used to simulate a financial market for a single abstract tradeable commodity.
+In each market simulation, I implemented a homogeneous population of $N_T=30$ PRDE traders with an equal number of buyers $N_B$ and sellers $N_S$ (i.e. $N_B=N_S=15$).
+The population in a given experiment was homogeneous with respect to the fact that all trader had the same differential weight $F$ and the same number in population $\mathrm{NP}$.
+Each simulation had what economists refer to as perfect elasticity of supply and demand: all $N_B$ buyers were provided a limit price of \$140 per unit, whilst all $N_S$ sellers were provided a limit price of \$60 per unit.
+This produced a market in which every active trader could, in theory, find a willing counterparty to trade with.
+In the simulation, after two traders engaged in a trade, they were rendered inactive until their stock was replenished, which occurred approximately every five seconds.
+I ran each experiment for 100 simulated days on an Apple MacBook Pro with the M1 Pro chip, which took approximately three hours running at 800x real-time.
 
-Figure \ref{NP_profit} displays the relationship between the total profit extracted from the market and the number in population $\mathrm{NP}$ for the experimental setup described; there is an evident negative correlation between $\mathrm{NP}$ and the total profit extracted.
+
+Figure \ref{profit_grid} displays a heatmap showing the combined profit extracted from the market by the population of $N_B$ buyers and $N_S$ sellers.
+This provides a strong indication of the economic efficiency of the market when populated with homogenous PRDE traders with different values of $F$ and $\mathrm{NP}$.
+There is a clear relationship between the efficiency of the market, and the values of $F$ and $\mathrm{NP}$.
+Notably, the market performed worst when $F$ and $\mathrm{NP}$ were set to low values, such as $F=0.0$ and $\mathrm{NP}=4$.
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=\columnwidth]{profit_grid.png}}
+    \caption{
+        Plot of profitability data from multiple 100-day experiments in markets populated entirely by homogeneous PRDE traders.
+        Horizontal axis is the differential weight coefficient $F$ of the homogeneous PRDE traders for a given market session; vertical axis is the number in population $\mathrm{NP}$ for the homogeneous PRDE traders for a given market session.
+        The intensity of pixel shading represents the total profit extracted from the market during a given 100-day experiment.
+        See text for further discussion.
+    }
+    \label{profit_grid}
+\end{figure}
+
+\subsection{Individual Effect of $\mathrm{NP}$}
+
+Figure \ref{NP_profit} displays the relationship between the total profit extracted from the market and the number in population $\mathrm{NP}$ when $F=0.8$; there is an evident negative correlation between $\mathrm{NP}$ and the total profit extracted.
 The negative correlation evident from these experiments indicates that markets containing homogeneous PRDE traders with larger private populations $\mathrm{NP}$ are less efficient.
 This can be primarily attributed to an increasingly lengthy adaptive transient at the beginning of the market session.
 The initial adaptive transient that occurs in homogenous markets of PRDE traders was first reported on by Cliff \cite{PRDE}.
@@ -169,7 +189,7 @@ Therefore, in homogeneous populations of PRDE traders with larger values of $\ma
 As a result, the total PPS $\pi_T$ extracted during the overall market session is lower.
 Markets containing homogeneous PRDE traders with larger private populations are less efficient.
 
-\subsection{Differential Weight Coefficient $F$}
+\subsection{Individual Effect of $F$}
 
 I conducted a very similar set of experiments to ascertain the effect the differential weight coefficient $F$ has on the dynamic of a coevolutionary market.
 For each experiment I similarly used a homogenous population of PRDE traders; I kept the number in population constant at $\mathrm{NP}=4$ and changed the coefficient $F$ between experiments.
@@ -243,8 +263,8 @@ On the other extreme of the spectrum when $F=2$, a very different market dynamic
 Figure \ref{k=4,F=2.0_buy_strats} similarly displays a heatmap of $s$-values for the 15 PRDE buyers whereby $F=2$.
 Unlike the uniform distribution of $s$-values exhibited when $F=0$, the $s$-values were significantly bimodal at the two extremes of $s\approx-1$ and $s\approx1$; moreso, both the buyers and sellers displayed this behaviour.
 This creates a market dynamic in which at each stage there is a number of both extremely `urgent' and extremely `relaxed' buyers and sellers.
-This is more efficient than when $F=0$, because the maximally `urgent' buyers will frequently trade with the maximally `relaxed' sellers, and vice versa.
-However, there is still a degree of inefficiency since two maximally `urgent' and two maximally `relaxed' traders cannot trade with one another.
+% This is more efficient than when $F=0$, because the maximally `urgent' buyers will frequently trade with the maximally `relaxed' sellers, and vice versa.
+% However, there is still a degree of inefficiency since two maximally `urgent' and two maximally `relaxed' traders cannot trade with one another.
 Furthermore, I found experimentally that for larger values of $F$, this inefficient bimodal behaviour was evermore prominant.
 
 \begin{figure}[htbp]
