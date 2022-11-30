@@ -82,37 +82,131 @@ He also proposed an arguably more intriguing exploration into effects that arise
 
 \section{Homogeneous Exploration of $F$ and $\mathrm{NP}$}
 
-\subsection{Combined Effect of $F$ and $\mathrm{NP}$}
+\subsection{Overview of the Combined Effect of $F$ and $\mathrm{NP}$}
 
-My initial experiments in this paper focus on the relationship between the number in population $\mathrm{NP}$ and the differential weight coefficient $F$, and the combined effect that these two values have on the dynamic of a coevolutionary market.
-To do so, I designed a set of experiments with a similar setup as Cliff in \cite{PRDE} in which BSE was used to simulate a financial market for a single abstract tradeable commodity.
+My initial experiments in this paper focus on the combined effect that $F$ and $\mathrm{NP}$ have on the dynamic of a coevolutionary market.
+I designed a set of experiments with a similar setup as Cliff in \cite{PRDE} in which BSE was used to simulate a financial market for a single abstract tradeable commodity.
 In each market simulation, I implemented a homogeneous population of $N_T=30$ PRDE traders with an equal number of buyers $N_B$ and sellers $N_S$ (i.e. $N_B=N_S=15$).
-The population in a given experiment was homogeneous with respect to the fact that all trader had the same differential weight $F$ and the same number in population $\mathrm{NP}$.
+The population in a given experiment was homogeneous with respect to the fact that all PRDE traders had the same differential weight $F$ and the same number in population $\mathrm{NP}$.
 Each simulation had what economists refer to as perfect elasticity of supply and demand: all $N_B$ buyers were provided a limit price of \$140 per unit, whilst all $N_S$ sellers were provided a limit price of \$60 per unit.
 This produced a market in which every active trader could, in theory, find a willing counterparty to trade with.
 In the simulation, after two traders engaged in a trade, they were rendered inactive until their stock was replenished, which occurred approximately every five seconds.
 I ran each experiment for 100 simulated days on an Apple MacBook Pro with the M1 Pro chip, which took approximately three hours running at 800x real-time.
 
-
 Figure \ref{profit_grid} displays a heatmap showing the combined profit extracted from the market by the population of $N_B$ buyers and $N_S$ sellers.
-This provides a strong indication of the economic efficiency of the market when populated with homogenous PRDE traders with different values of $F$ and $\mathrm{NP}$.
-There is a clear relationship between the efficiency of the market, and the values of $F$ and $\mathrm{NP}$.
-Notably, the market performed worst when $F$ and $\mathrm{NP}$ were set to low values, such as $F=0.0$ and $\mathrm{NP}=4$.
+There is a clear association between the configuration of these two values and the efficiency of the market.
+However, the cause of this association is not obvious from inspecting the raw values of $F$ and $\mathrm{NP}$.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=\columnwidth]{profit_grid.png}}
     \caption{
-        Plot of profitability data from multiple 100-day experiments in markets populated entirely by homogeneous PRDE traders.
-        Horizontal axis is the differential weight coefficient $F$ of the homogeneous PRDE traders for a given market session; vertical axis is the number in population $\mathrm{NP}$ for the homogeneous PRDE traders for a given market session.
-        The intensity of pixel shading represents the total profit extracted from the market during a given 100-day experiment.
+        Relationship between the differential weight coefficient $F$, the number in population $\mathrm{NP}$ and the total profit extracted by all PRDE traders in the market.
+        Horizontal axis is the differential weight coefficient $F$; vertical axis is the number in population $\mathrm{NP}$.
+        The intensity of pixel shading represents the total profit extracted from the market during a given 100-day simulation.
         See text for further discussion.
     }
     \label{profit_grid}
 \end{figure}
 
-\subsection{Individual Effect of $\mathrm{NP}$}
+To further understand the association, one must consider how the $s$-value of a given PRDE trader at a particular point in time affects the probability of it finding a counterparty to trade with.
+For a given trader, as $s\to1$ (i.e. increasingly `urgent') the trader's quote prices are evermore likely to attract a counterparty; the reverse is true as $s\to-1$ (i.e. increasingly `relaxed').
+Thus, there is a strong relationship between the amount of time the traders in the market are `urgent' and the total profit extracted from the market, as evident in Figure \ref{strategy_profit}.
+More specifically, there is a strong positive correlation between the total amount of time the traders in the market spent with $s>0.5$ (i.e. `very urgent') and the total profit extracted from the market.
+In fact, the coefficient of determination of the relationship is $R^2=0.72$; thus, a large amount of the variance in the profit extracted from the market can be explained by this relationship.
+Considering the inherent stochasticity in market simulations, this can be considered a strong relationship.
 
-Figure \ref{NP_profit} displays the relationship between the total profit extracted from the market and the number in population $\mathrm{NP}$ when $F=0.8$; there is an evident negative correlation between $\mathrm{NP}$ and the total profit extracted.
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=\columnwidth]{strategy_profit.png}}
+    \caption{
+        Relationship between the number of trader-hours in the market playing `very urgent' stratgies (i.e. $s>0.5$) and the total profit extracted by all traders in the market.
+        Horizontal axis is the number of trader-hours where $s>0.5$; vertical axis is the total profit extracted from the market during a given 100-day simulation.
+        The line shows linear regression; $R^2=0.72$.
+        See text for further discussion.
+    }
+    \label{strategy_profit}
+\end{figure}
+
+\subsection{Analysis of the Effect of $F$}
+
+As mentioned, much of the variance in the efficiency of the market can be explained by the quantity of `very urgent' traders residing in it.
+To this end, the influence that $F$ has on the total profitability can be primarily attributed to how it influences the `urgency' of the traders.
+This was confirmed using data from the market simulations, which showed that larger values of $F$ tended to increase the traders' `urgency'.
+This is evident in Figure \ref{F_strats}, which shows that 77\% of the variance in the number of trader-hours spent with $s>0.5$ can be explained purely the differential weight of the PRDE traders.
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=\columnwidth]{F_strats.png}}
+    \caption{
+        Relationship between $F$ and the number of trader-hours in the market playing `very urgent' strategies (i.e. $s>0.5$).
+        Horizontal axis is the differential weight coefficient $F$; vertical axis is the number of trader-hours where $s>0.5$.
+        The line shows linear regression; $R^2=0.77$.
+        See text for further discussion.
+    }
+    \label{F_strats}
+\end{figure}
+
+Figure \ref{k=14_strats} shows how the `urgency' of the PRDE traders develops over the 100-day market sessions for different values of $F$.
+It displays the percentage of traders playing with $s>0.5$ throughout multiple market sessions when $\mathrm{NP}=14$.
+The graph highlights that the proportion of `urgent' strategies increased significantly faster for larger values of $F$.
+For example, when $F=0.4$, it took approximately 90 days for the seven-day simple moving average to increase to it's maximum percentage of 37.5\%.
+This is a large amount of time considering even a uniform distribution of $s$-values would be expected to achieve 25\%.
+Conversely, when $F=2$, the moving average had reached this percentage after only seven days.
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=\columnwidth]{k=14_strats.png}}
+    \caption{
+        Plot of the percentage of `very urgent' traders from multiple 100-day experiments in a market populated entirely by PRDE traders with $\mathrm{NP}=14$.
+        Horizontal axis is time, measured in days; vertical axis is the proportion of traders with an $s$-value of $s>0.5$.
+        Each line is a seven-day simple moving average of the proportion for different values of $F$.
+        See text for further discussion.
+    }
+    \label{k=14_strats}
+\end{figure}
+
+The reason for this effect can be explained mathematically.
+Taking the extreme example of $F=0$, the equation to derive a new candidate stratety $s_{i,y}$ to replace $s_{i,x}$ simply becomes $s_{i,y}\leftarrow s_{i,a}$.
+Therefore, for a given trader $i$, following the evaluation period of $s_{i,y}$, the value of $s_{i,x}$ can either remain the same, or take on the value of $s_{i,y}=s_{i,a}$, in which case two or more of the $s$-values in the local population will be identical---the `genetic diversity' will be reduced.
+In fact, the only time a new $s$-value can be introduced into trader $i$'s local population is when the diversity of $s$-values becomes so constrained a `mega-mutation' occurs, in which case a new $s$-value is sampled from $\mathcal{U}(-1,1)$.
+As a result, the distribution of $s$-values in the entire population of PRDE traders struggles to deviate significantly from uniformity throughout the entirety of the 100-day market session.
+This ultimately produces a market containing a wide range of both `urgent' and `relaxed' buyers and sellers, which is inefficient since many of the more `relaxed' traders will be unable to find a willing counterparty.
+An example of such a distribution of $s$-values can be seen in Figure \ref{k=14,F=0.0_buy_strats}, which displays a heatmap of individual strategy values for the proportion of 15 PRDE buyers when $F=0$ and $\mathrm{NP}=14$.
+While the case of $F=0$ is extreme, I found experimentally that the market increasingly exhibits the inefficient dynamics described here as $F$ tends towards $0$.
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=\columnwidth]{k=14,F=0.0_buy_strats.png}}
+    \caption{
+        Heatmap of individual strategy-values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=0$ and $\mathrm{NP}=14$.
+        Horizontal axis is time, measured in days; vertial axis is the strategy value pixelated into 40 bins of size 0.05.
+        The intensity of pixel shading increases with the number of PRDE sellers in the population currently trading with a strategy value in a given 0.05 range.
+        See text for further discussion.
+    }
+    \label{k=14,F=0.0_buy_strats}
+\end{figure}
+
+On the other extreme of the spectrum when $F=2$, a very different market dynamic tends to manifest.
+This is evident in Figure \ref{k=14,F=2.0_buy_strats}, which displays a heatmap for the 15 PRDE buyers whereby $F=2$ and $\mathrm{NP}=14$.
+Unlike the more uniform distribution of $s$-values exhibited when $F=0$, the $s$-values in Figure \ref{k=14,F=2.0_buy_strats} were bimodal at the two extremes of $s\approx-1$ and $s\approx1$, with the peak at $s=1$ being slightly larger.
+Moreso, both the buyers and sellers displayed this behaviour.
+Again, this can be explained mathematically using the equation to derive a new candidate stratety $s_{i,y}$ to replace $s_{i,x}$.
+The value of trader $i$'s differential coefficient $F_i$ is directly proportional to $F_i(s_{i,b}-s_{i,c})$.
+Thus, assuming $s_{i,b}-s_{i,c}$ is non-zero, the value of $s_{i,y}$ is more likely to be $-1$ or $1$ as $F_i$ increases.
+This creates a market dynamic in which there is very quickly a number of of both extremely `urgent' and extremely `relaxed' buyers and sellers.
+This large number of urgent traders that exist throughout the market session enable a large amount of profit to be extracted from the market.
+Furthermore, I found experimentally that for larger values of $F$, this bimodal behaviour is evermore prominant.
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=\columnwidth]{k=14,F=2.0_buy_strats.png}}
+    \caption{
+        Heatmap of individual stratey values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=2$ and $\mathrm{NP}=14$.
+        Format is the same as for Figure \ref{k=14,F=0.0_buy_strats}.
+        See text for further discussion.
+    }
+    \label{k=14,F=2.0_buy_strats}
+\end{figure}
+
+\subsection{Analaysis of the Effect of $\mathrm{NP}$}
+
+In Figure \ref{profit_grid}, there is an evident negative correlation 
+% Figure \ref{NP_profit} displays the relationship between the total profit extracted from the market and the number in population $\mathrm{NP}$ when $F=0.8$; there is an evident negative correlation between $\mathrm{NP}$ and the total profit extracted.
 The negative correlation evident from these experiments indicates that markets containing homogeneous PRDE traders with larger private populations $\mathrm{NP}$ are less efficient.
 This can be primarily attributed to an increasingly lengthy adaptive transient at the beginning of the market session.
 The initial adaptive transient that occurs in homogenous markets of PRDE traders was first reported on by Cliff \cite{PRDE}.
@@ -120,48 +214,13 @@ There is a pattern in the total profit per second (PPS) extracted from the marke
 $\pi_T$ follows a two-phase pattern: there is an initial adaptive transient whereby $\pi_T$ increases, followed by a prolonged period whereby $\pi_T$ remains in approximately the same range.
 This two-phase pattern is due to the system's initial random conditions being improved upon until the system settles to an ongoing dynamic in which $\pi_T$ has a zero-sum nature: in general, for the total PPS extracted by the buyers $\pi_B$ to go up, the total profit extracted by the sellers $\pi_S$ must go down, and vice versa.
 
-\begin{figure}[htbp]
-    \centering
-    \begin{tikzpicture}[every node/.append style={font=\footnotesize}]
-        \begin{axis}[
-            width=\columnwidth,
-            height=0.6\columnwidth,
-            xmode=log,
-            log basis x=2,
-            xlabel=$\mathrm{NP}$,
-            ylabel=Profit,
-            scatter/classes={a={mark=x,draw=black}},
-        ]
-            \addplot[
-                scatter,
-                only marks,
-                scatter src=explicit symbolic
-            ]
-                table[meta=label] {
-                    x y label
-                    4 1552845200 a
-                    8 1517334000 a
-                    16 1471710560 a
-                    32 1471710560 a
-                    64 1381418400 a
-                };
-        \end{axis}
-    \end{tikzpicture}
-    \caption{
-        Plot of profitability data from multiple 100-day experiments in a market populated entirely by PRDE traders with $F=0.8$.
-        Horizontal axis is the number in population $\mathrm{NP}$ of each PRDE trader; vertical axis is the total profit extracted by all 30 PRDE traders.
-        See text for further discussion.
-    }
-    \label{NP_profit}
-\end{figure}
-
 Figure \ref{k=4,F=0.8_pps} and Figure \ref{k=64,F=0.8_pps} display the PPS for markets containing homogeneous PRDE traders with $\mathrm{NP=4}$ and $\mathrm{NP}=64$, respectively.
 The PPS was computed every $\Delta t=3600$ seconds, by dividing the total profit a given trader achieved during the prior $\Delta t$ seconds by $\Delta t$.
 When $\mathrm{NP}=4$, the PRDE traders in the market very quickly improved on their initial random $s$-values to manifestly extract more profit from the market.
 Conversely, when $\mathrm{NP}=64$, the PRDE traders take significantly longer.
 
 \begin{figure}[htbp]
-    \centerline{\includegraphics[width=\columnwidth]{k=4,F=0.8_pps.png}}
+    \centerline{\includegraphics[width=\columnwidth]{k=14,F=0.0_buy_strats.png}}
     \caption{
         Plot of profitability data from one 100-day experiment in a market populated entirely by PRDE traders with $F=0.8$ and $\mathrm{NP}=4$.
         Horizontal axis is time, measured in days; vertical axis is PPS. 
@@ -173,7 +232,7 @@ Conversely, when $\mathrm{NP}=64$, the PRDE traders take significantly longer.
 \end{figure}
 
 \begin{figure}[htbp]
-    \centerline{\includegraphics[width=\columnwidth]{k=64,F=0.8_pps.png}}
+    \centerline{\includegraphics[width=\columnwidth]{k=14,F=0.0_buy_strats.png}}
     \caption{
         Plot of profitability data from one 100-day experiment in a market populated entirely by PRDE traders with $F=0.8$ and $\mathrm{NP}=64$.
         Format is the same as for Figure \ref{k=4,F=0.8_pps}.
@@ -189,117 +248,8 @@ Therefore, in homogeneous populations of PRDE traders with larger values of $\ma
 As a result, the total PPS $\pi_T$ extracted during the overall market session is lower.
 Markets containing homogeneous PRDE traders with larger private populations are less efficient.
 
-\subsection{Individual Effect of $F$}
 
-I conducted a very similar set of experiments to ascertain the effect the differential weight coefficient $F$ has on the dynamic of a coevolutionary market.
-For each experiment I similarly used a homogenous population of PRDE traders; I kept the number in population constant at $\mathrm{NP}=4$ and changed the coefficient $F$ between experiments.
-Figure \ref{F_profit} displays the relationship between the total profit extracted from the market and the differential weight coefficient $F$.
-This relationship is interesting: initially, as $F$ increases from $0$ the total profit slowly increases; the trend breaks when $F$ is in the approximate range $[0.75, 0.95]$, whereby there is a sudden spike in profitability; above this range, and the profitability again reduces.
 
-\begin{figure}[htbp]
-    \centering
-    \begin{tikzpicture}[every node/.append style={font=\footnotesize}]
-        \begin{axis}[
-            width=\columnwidth,
-            height=0.6\columnwidth,
-            xlabel=$F$,
-            ylabel=Profit,
-            scatter/classes={a={mark=x,draw=black}},
-        ]
-            \addplot[
-                scatter,
-                only marks,
-                scatter src=explicit symbolic
-            ]
-                table[meta=label] {
-                    x y label
-                    0 1334971600 a
-                    0.4 1400501360 a
-                    0.6 1424963200 a
-                    0.7 1386720880 a
-                    0.75 1558054080 a
-                    0.8 1526963760 a
-                    0.85 1520380480 a
-                    0.9 1541195840 a
-                    0.95 1571747360 a
-                    1.0 1466603440 a
-                    1.2 1463156800 a
-                    1.6 1477638720 a
-                    2.0 1481592960 a
-                };
-        \end{axis}
-    \end{tikzpicture}
-    \caption{
-        Plot of profitability data from multiple 100-day experiments in a market populated entirely by PRDE traders with $\mathrm{NP}=4$.
-        Horizontal axis is the differential weight coefficient $F$ of each PRDE trader; vertical axis is the total profit extracted by all 30 PRDE traders.
-        See text for further discussion.
-    }
-    \label{F_profit}
-\end{figure}
-
-This relationship can be safely attributed to the strong effect that $F$ has on the distribution of $s$-values in the entire population of PRDE traders.
-Figure \ref{k=4,F=0.0_buy_strats} displays a heatmap of the $s$-values used by the 15 PRDE buyers in a homogeneous market with $F=0$.
-Throughout the 100-day experiment, the distribution of $s$-values remained approximately uniform in the range $[-1, 1]$.
-This was because when $F=0$ the equation to derive a new candidate stratety $s_{i,y}$ to replace $s_{i,x}$ simply becomes $s_{i,y}\leftarrow s_{i,a}$.
-Therefore, for a given trader $i$, following the evaluation period of $s_{i,y}$, the value of $s_{i,x}$ can either remain the same, or take on the value of $s_{i,y}=s_{i,a}$, in which case two or more of the $s$-values in the local population will be identical---the `genetic diversity' will be reduced.
-In fact, the only time a new $s$-value can be introduced into trader $i$'s local population is when the diversity of $s$-values becomes so constrained a `mega-mutation' occurs, in which case a new $s$-value is sampled from $\mathcal{U}(-1,1)$.
-As a result, the distribution of $s$-values in the entire population of PRDE traders remains approximately uniform throughout the 100-day market session.
-This ultimately produces a market containing a wide range of both `urgent' and `relaxed' buyers and sellers, with individual PRDE traders unable to optimise their strategy values.
-The effect of this is an inefficient market.
-While the case of $F=0$ is extreme, I found experimentally that the market increasingly exhibits the inefficient dynamics described here as $F$ tends towards $0$.
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=\columnwidth]{k=4,F=0.0_buy_strats.png}}
-    \caption{
-        Heatmap of individual strategy-values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=0$ and $\mathrm{NP}=64$.
-        Horizontal axis is time, measured in days; vertial axis is the strategy value pixelated into 40 bins of size 0.05.
-        The intensity of pixel shading increases with the number of PRDE sellers in the population currently trading with a strategy value in a given 0.05 range.
-        See text for further discussion.
-    }
-    \label{k=4,F=0.0_buy_strats}
-\end{figure}
-
-On the other extreme of the spectrum when $F=2$, a very different market dynamic manifests.
-Figure \ref{k=4,F=2.0_buy_strats} similarly displays a heatmap of $s$-values for the 15 PRDE buyers whereby $F=2$.
-Unlike the uniform distribution of $s$-values exhibited when $F=0$, the $s$-values were significantly bimodal at the two extremes of $s\approx-1$ and $s\approx1$; moreso, both the buyers and sellers displayed this behaviour.
-This creates a market dynamic in which at each stage there is a number of both extremely `urgent' and extremely `relaxed' buyers and sellers.
-% This is more efficient than when $F=0$, because the maximally `urgent' buyers will frequently trade with the maximally `relaxed' sellers, and vice versa.
-% However, there is still a degree of inefficiency since two maximally `urgent' and two maximally `relaxed' traders cannot trade with one another.
-Furthermore, I found experimentally that for larger values of $F$, this inefficient bimodal behaviour was evermore prominant.
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=\columnwidth]{k=4,F=2.0_buy_strats.png}}
-    \caption{
-        Heatmap of individual stratey values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=2$ and $\mathrm{NP}=64$.
-        Format is the same as for Figure \ref{k=4,F=0.0_buy_strats}.
-        See text for further discussion.
-    }
-    \label{k=4,F=2.0_buy_strats}
-\end{figure}
-
-The differential weight coefficient $F=0.8$ produced a market with the most efficient dynamics.
-Figure \ref{k=4,F=0.8_buy_strats} displays a heatmap of individual $s$-values for the population of 15 PRDE buyers in this market.
-Arguably, the distribution of the $s$-values in this market exhibits a degree of balance between the two extremes described previously.
-There is a clear dominant mode at $s\approx-1$.
-However, there is also a range of other $s$-values being trialled by the 15 buyers, most of which are greater than zero.
-The distribution of $s$-values for the population of 15 PRDE sellers was the reverse of this.
-There was a dominant mode at $s\approx 1$, with a range of other $s$-values, most of which were less than zero.
-This distribution appears to consistently produce a market with efficient dynamics: the total population of traders were able to extract more profit from the market.
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=\columnwidth]{k=4,F=0.8_buy_strats.png}}
-    \caption{
-        Heatmap of individual stratey values for the population of 15 PRDE buyers in a market populated entirely by PRDE traders with $F=0.8$ and $\mathrm{NP}=64$.
-        Format is the same as for Figure \ref{k=4,F=0.0_buy_strats}.
-        See text for further discussion.
-    }
-    \label{k=4,F=0.8_buy_strats}
-\end{figure}
-
-\subsection{Relationship Between $F$ and $\mathrm{NP}$}
-
-Thus far, I have evaluated the effects of the differential weight coefficient $F$ and the number in population $\mathrm{NP}$ independently.
-However, there is a level of interplay between these two parameters that I also sought to investigate.
 
 \section{Heterogeneous Exploration of $F$ and $\mathrm{NP}$}
 
