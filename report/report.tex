@@ -88,14 +88,16 @@ My initial experiments in this paper focus on the combined effect that $F$ and $
 I designed a set of experiments with a similar setup as Cliff in \cite{PRDE} in which BSE was used to simulate a financial market for a single abstract tradeable commodity.
 In each market simulation, I implemented a homogeneous population of $N_T=30$ PRDE traders with an equal number of buyers $N_B$ and sellers $N_S$ (i.e. $N_B=N_S=15$).
 The population in a given experiment was homogeneous with respect to the fact that all PRDE traders had the same differential weight $F$ and the same number in population $\mathrm{NP}$.
-Each simulation had what economists refer to as perfect elasticity of supply and demand: all $N_B$ buyers were provided a limit price of \$140 per unit, whilst all $N_S$ sellers were provided a limit price of \$60 per unit.
+Each simulation had what economists refer to as perfect elasticity of supply and demand: all $N_B$ buyers were provided a limit price of $\lambda_B=\$140$ per unit, whilst all $N_S$ sellers were provided a limit price of $\lambda_S=\$60$ per unit.
 This produced a market in which every active trader could, in theory, find a willing counterparty to trade with.
 In the simulation, after two traders engaged in a trade, they were rendered inactive until their stock was replenished, which occurred approximately every five seconds.
 I ran each experiment for 100 simulated days on an Apple MacBook Pro with the M1 Pro chip, which took approximately three hours running at 800x real-time.
 
+In market simulations such as these, `profit' is conventionally used to refer to the absolute difference between the trader's limit price and the transaction price.
 Figure \ref{profit_grid} displays a heatmap showing the combined profit extracted from the market by the population of $N_B$ buyers and $N_S$ sellers.
-There is a clear association between the configuration of these two values and the efficiency of the market.
-However, the cause of this association is not obvious from inspecting the raw values of $F$ and $\mathrm{NP}$.
+Considering each experiment used an identical quantity of traders and identical limit prices, the total profit extracted is indicative of market efficiency.
+As such, there is a clear association between the configuration of $F$ and $\mathrm{NP}$ and the efficiency of the market.
+However, the cause of this association is not obvious from inspecting the raw values.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=\columnwidth]{profit_grid.png}}
@@ -108,10 +110,18 @@ However, the cause of this association is not obvious from inspecting the raw va
     \label{profit_grid}
 \end{figure}
 
-To further understand the association, one must consider how the $s$-value of a given PRDE trader at a particular point in time affects the probability of it finding a counterparty to trade with.
+To further understand this association, one must consider how the $s$-value of a given PRDE trader at a particular point in time affects the probability of it finding a counterparty to trade with.
 For a given trader, as $s\to1$ (i.e. increasingly `urgent') the trader's quote prices are evermore likely to attract a counterparty; the reverse is true as $s\to-1$ (i.e. increasingly `relaxed').
-Thus, there is a strong relationship between the amount of time the traders in the market are `urgent' and the total profit extracted from the market, as evident in Figure \ref{strategy_profit}.
-More specifically, there is a strong positive correlation between the total amount of time the traders in the market spent with $s>0.5$ (i.e. `very urgent') and the total profit extracted from the market.
+As such, there is a strong relationship between the amount of time the traders in the market are `urgent' and the quantity of trades in the market session.
+Due to each experiment having perfect elasticity of supply and demand, for a given trade at price $P$, the seller's profit can be denoted $P-\lambda_S$, whilst the buyer's profit can be denoted $\lambda_B-P$.
+Therfore, the combined profit is as follows:
+\[
+  (P-\lambda_S) + (\lambda_B-P)=\lambda_B-\lambda_S
+\]
+In other words, the profit extracted from the market from any given trade is constant.
+As such, the total profit extracted from the entirety of a given 100-day market session is directly proportional to the number of trades, which, as mentioned, is related to the amount of time traders in the market are `urgent'.
+I proved experimentally that this relationship indeed manifests, as evident in Figure \ref{strategy_profit}.
+There was a strong positive correlation between the total amount of time the traders in the market spent with $s>0.5$ (i.e. `very urgent') and the total profit extracted from the market.
 In fact, the coefficient of determination of the relationship is $R^2=0.72$; thus, a large amount of the variance in the profit extracted from the market can be explained by this relationship.
 Considering the inherent stochasticity in market simulations, this can be considered a strong relationship.
 
@@ -125,6 +135,11 @@ Considering the inherent stochasticity in market simulations, this can be consid
     }
     \label{strategy_profit}
 \end{figure}
+
+Due to this relationship, if every trader was aware of the perfect elasticity of supply and demand, and decided to act in the best interests of the market, they would behave like a PRZI trader with $s=1$.
+This would maximise the number of trades in the market, and thus maximise the profit extracted from the market.
+However, each trader is only aware of their own limit price, and additionally only seeks to optimise their own profitability.
+It is this that introduces inherent inefficiency into the market.
 
 \subsection{Analysis of the Effect of $F$}
 
@@ -234,12 +249,47 @@ In other words, it is inversely proportional to $\mathrm{NP}$.
 Therefore, in homogeneous populations of PRDE traders with larger values of $\mathrm{NP}$, it takes significantly longer to iteratively improve on the initial random conditions in the entire local population of $s$-values.
 As a result, it takes significantly longer for the PRDE traders to accumulate a large number of $s$-values of $s>0.5$, and as such the market is less efficient.
 
-
 \section{Heterogeneous Exploration of $F$ and $\mathrm{NP}$}
 
-Contemporary real-world markets are not comprised of homogeneous populations of automated trading-agents; real-world markets contain a multitude of different trading algorithms, all using different adaptive algorithms to maximise profitability, as well as a number of human traders.
+The experiments conducted to this point all involved homogeneous populations of PRDE traders.
+The results clearly showed that the markets containing PRDE traders with large values of $F$ and moderately large values of $\mathrm{NP}$, such as $F=2$ and $\mathrm{NP}=14$, managed to extract the most profit from the market.
+This was simply because these combinations of $F$ and $\mathrm{NP}$ influenced the DE algorithm to sustain more highly `urgent' $s$-values.
+However, contemporary real-world markets are not comprised of homogeneous populations of automated trading-agents; real-world markets contain a multitude of different trading algorithms, all using different adaptive algorithms to maximise profitability, as well as a number of human traders.
+Thus, I sought to investigate whether the profitability of a given combination of $(F, \mathrm{NP})$ in a homogeneous market was correlated to the profitability of the same combination in a heterogeneous market.
+To do so, I ran a follow-up experiment with a very similar setup to that described previously to control for extraneous variables.
+I similarly used BSE to simulate a financial market with $N_T=30$ PRDE traders with an equal number of buyers $N_B$ and sellers $N_S$ (i.e. $N_B=N_S=15$).
+I used a limit price of \$140 per unit for the $N_B$ buyers and \$60 per unit for the $N_S$ sellers, and ran the experiment for 100 simulated days.
+In fact, the only difference was the fact that I populated the market with heterogeneous PRDE traders rather than homogeneous PRDE traders.
+I supplied each of the $N_B$ buyers and $N_S$ sellers an $(F,\mathrm{NP})$ combination from the 15 elements in the following set:
+\[
+  \left\{ (F, \mathrm{NP}) \mid F\in\{0, 0.4, 0.8, 1.6, 2\} \land \mathrm{NP} \in \{4, 12, 20 \} \right\}
+\]
+such that each buyer had a corresponding seller with the same element, but no two buyers or sellers had the same combination.
+
+The total profit extracted from the heterogeneous market---which is indicative of market efficiency---was comfortably within the range of the homogeneous experiments at approximately 1.43 billion.
+In fact, it was within 1\% of the mean profit extracted from the homogeneous experiments in which the $(F,\mathrm{NP})$ combinations comprised the heterogeneous experiment.
+However, interestingly, there was no discernible relationship between the profitability of a trader with a given $(F, \mathrm{NP})$ combination in the homogeneous experiments and the same $(F, \mathrm{NP})$ in the heterogeneous experiment, as evident in Figure \ref{heterogeneous_homogeneous}.
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=\columnwidth]{heterogeneous_homogeneous_scatter.png}}
+    \caption{
+        Relationship between the profitability per trader in the homogeneous experiments and the heterogeneous experiments.
+        Horizontal axis is the mean profit per trader in a given homogeneous experiment for a specific combination of $F$ and $\mathrm{NP}$; vertical axis is the mean profit per trader in the heterogeneous experiment for the same combination of $F$ and $\mathrm{NP}$.
+        See text for further discussion.
+    }
+    \label{heterogeneous_homogeneous}
+\end{figure}
+
+This indicates that the effect of $F$ and $\mathrm{NP}$ differs according to the population of traders in the market.
+In effect, there is no absolute `optimal' combination that will consistently extract the maximum profit, because the behaviour of the other traders in the market strongly influences the control that $F$ and $\mathrm{NP}$ have.
 
 \section{Extending PRDE}
+
+\subsection{JADE}
+
+\subsection{Results}
+
+\section{Conclusion}
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
