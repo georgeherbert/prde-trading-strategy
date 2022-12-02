@@ -52,6 +52,7 @@ import sys
 import math
 import random
 import time as chrono
+import numpy as np
 
 # a bunch of system constants (globals)
 bse_sys_minprice = 1                    # minimum price in the system, in cents/pennies
@@ -664,8 +665,10 @@ class Trader_PRZI(Trader):
 
         # unpack the params
         if type(params) is dict:
-            k = params['k']
+            k = params['k'] if 'k' in params else None
             f = params['F'] if 'F' in params else None
+            c = params['c'] if 'c' in params else None
+            p = params['p'] if 'p' in params else None
             optimizer = params['optimizer']
             s_min = params['strat_min']
             s_max = params['strat_max']
@@ -677,6 +680,8 @@ class Trader_PRZI(Trader):
         self.optmzr = optimizer     # this determines whether it's PRZI, PRSH, or PRDE
         self.k = k                  # number of sampling points (cf number of arms on a multi-armed-bandit, or pop-size)
         self.f = f
+        self.c = c
+        self.p = p
         self.theta0 = 100           # threshold-function limit value
         self.m = 4                  # tangent-function multiplier
         self.strat_wait_time = 7200     # how many secs do we give any one strat before switching?
@@ -698,6 +703,10 @@ class Trader_PRZI(Trader):
                          'snew_stratval': None,            # assigned later
                          'F': self.f                       # differential weight -- usually between 0 and 2
         }
+        self.strats_next_gen = []
+        self.strats_archive = []
+        self.mu_F = 0.5
+        
 
         start_time = time
         profit = 0.0
@@ -718,11 +727,21 @@ class Trader_PRZI(Trader):
                 elif self.optmzr == 'PRDE':
                     # differential evolution: seed initial strategies across whole space
                     strategy = self.mutate_strat(self.strats[0]['stratval'], 'uniform_bounded_range')
+                elif self.optmzr == 'PRJADE':
+                    strategy = self.mutate_strat(self.strats[0]['stratval'], 'uniform_bounded_range')
                 else:
                     sys.exit('bad self.optmzr when initializing PRZI strategies')
             self.strats.append({'stratval': strategy, 'start_t': start_time,
                                 'profit': profit, 'pps': profit_per_second, 'lut_bid': lut_bid, 'lut_ask': lut_ask})
-
+        
+        if self.optmzr == 'PRJADE':
+            for s in range(self.k + 1):
+                self.strats_next_gen.append(
+                    {'stratval': None, 'start_t': start_time, 'profit': profit, 'pps': profit_per_second, 
+                    'lut_bid': lut_bid, 'lut_ask': lut_ask}
+                )
+            self.diffevol['S_F'] = []
+    
         if self.params == 'landscape-mapper':
             # replace seed+mutants set of strats with regularly-spaced strategy values over the whole range
             self.strats = []
@@ -1240,10 +1259,10 @@ class Trader_PRZI(Trader):
 
                     # DC's intervention for fully converged populations
                     # is the stddev of the strategies in the population equal/close to zero?
-                    sum = 0.0
+                    sum_ = 0.0
                     for s in range(self.k):
-                        sum += self.strats[s]['stratval']
-                    strat_mean = sum / self.k
+                        sum_ += self.strats[s]['stratval']
+                    strat_mean = sum_ / self.k
                     sumsq = 0.0
                     for s in range(self.k):
                         diff = self.strats[s]['stratval'] - strat_mean
@@ -1269,6 +1288,93 @@ class Trader_PRZI(Trader):
 
                 else:
                     sys.exit('FAIL: self.diffevol[\'de_state\'] not recognized')
+
+        elif self.optmzr == 'PRJADE':
+            actv_lifetime = time - self.strats[self.active_strat]['start_t']
+
+            if actv_lifetime >= self.strat_wait_time:
+                if self.k < 4:
+                    sys.exit('FAIL: k too small for JADE diffevol')
+
+                i_0 = self.diffevol['s0_index']
+                i_new = self.diffevol['snew_index']
+
+                # If we've just evaluated s0 we need to create then set up an s_new
+                if self.diffevol['de_state'] == 'active_s0':
+                    self.diffevol['F'] = min(np.random.standard_cauchy(1).item() * 0.1 + self.mu_F, 1)
+                    while self.diffevol['F'] <= 0:
+                        self.diffevol['F'] = np.random.standard_cauchy(1).item() * 0.1 + self.mu_F
+
+                    strat_fitnesses = [strat['pps'] for strat in self.strats[:-1]]
+                    fitness_percentile = np.percentile(strat_fitnesses, 100 - self.p)
+                    p_best_indices = np.where(strat_fitnesses >= fitness_percentile)[0]
+                    random.shuffle(p_best_indices)
+                    s_pbest_stratval = self.strats[p_best_indices[0]]['stratval']
+
+                    i_r1 = i_0
+                    while i_r1 == i_0:
+                        i_r1 = random.randrange(0, self.k)
+                    s_r1_stratval = self.strats[i_r1]['stratval']
+
+                    i_r2 = i_0
+                    stratvals = [s['stratval'] for s in self.strats[:-1]] + self.strats_archive
+                    while i_r2 == i_0 or i_r2 == i_r1:
+                        i_r2 = random.randrange(0, len(stratvals))
+                    s_r2_stratval = stratvals[i_r2]
+
+                    new_stratval = self.strats[i_0]['stratval'] + self.diffevol['F'] * (s_pbest_stratval - self.strats[i_0]['stratval']) + self.diffevol['F'] * (s_r1_stratval - s_r2_stratval)
+                    new_stratval = max(-1, min(1, new_stratval))
+                    self.strats[i_new]['stratval'] = new_stratval
+
+                    self.active_strat = self.diffevol['snew_index'] # The active strat is now s_new
+                    self.strats[self.active_strat]['start_t'] = time #
+                    self.strats[self.active_strat]['profit'] = 0.0
+                    self.strats[self.active_strat]['pps'] = 0.0
+                    self.diffevol['de_state'] = 'active_snew' # We set the state of JADE to s_new 
+
+                # Otherwise, we have just evaluated s_new
+                elif self.diffevol['de_state'] == 'active_snew':
+                    fit_0 = self.strats[i_0]['pps']
+                    fit_new = self.strats[i_new]['pps']
+                    
+                    # If the new strat was not any better we add the old strat to the next generation
+                    if fit_0 >= fit_new:
+                        self.strats_next_gen[i_0]['stratval'] = self.strats[i_0]['stratval']
+                    # Otherwise the new start was better, so we add the new strat to the next generation
+                    else:
+                        self.strats_next_gen[i_0]['stratval'] = self.strats[i_new]['stratval']
+                        self.strats_archive.append(self.strats[i_0]['stratval'])
+                        self.diffevol['S_F'].append(self.diffevol['F'])
+
+                    # If all s-values in the population have been evaluated
+                    if i_0 == self.k - 1:
+                        # We randomly remove solutions from A until |A| <= NP
+                        random.shuffle(self.strats_archive)
+                        while len(self.strats_archive) > len(self.strats):
+                            self.strats_archive.pop()
+
+                        
+                        lehmer = sum([f ** 2 for f in self.diffevol['S_F']]) / (sum(self.diffevol['S_F']) + 1e-8)
+                        self.mu_F = (1 - self.c) * self.mu_F + self.c * lehmer
+
+                        # We copy the next generation into the old generation
+                        self.strats = [i.copy() for i in self.strats_next_gen]
+
+                        self.diffevol['S_F'] = []
+
+                        # We start analysing again from the 0th strat in the new generation
+                        self.diffevol['s0_index'] = 0
+
+                    # If all s-values have not been evaluated we need to create a new s_new
+                    else:
+                        self.diffevol['s0_index'] += 1
+        
+                    self.active_strat = self.diffevol['s0_index']
+                    self.strats[self.active_strat]['start_t'] = time
+                    self.strats[self.active_strat]['profit'] = 0.0
+                    self.strats[self.active_strat]['pps'] = 0.0
+
+                    self.diffevol['de_state'] = 'active_s0'                
 
         elif self.optmzr is None:
             # this is PRZI -- nonadaptive, no optimizer, nothing to change here.
@@ -1557,6 +1663,8 @@ def populate_market(traders_spec, traders, shuffle, verbose):
             return Trader_PRZI('PRSH', name, balance, parameters, time0)
         elif robottype == 'PRDE':
             return Trader_PRZI('PRDE', name, balance, parameters, time0)
+        elif robottype == 'PRJADE':
+            return Trader_PRZI('PRJADE', name, balance, parameters, time0)
         else:
             sys.exit('FATAL: don\'t know robot type %s\n' % robottype)
 
@@ -1575,7 +1683,7 @@ def populate_market(traders_spec, traders, shuffle, verbose):
     def unpack_params(trader_params, mapping):
         # unpack the parameters for PRZI-family of strategies
         parameters = None
-        if ttype == 'PRSH' or ttype == 'PRDE' or ttype == 'PRZI':
+        if ttype == 'PRSH' or ttype == 'PRDE' or ttype == 'PRZI' or ttype == 'PRJADE':
             # parameters matter...
             if mapping:
                 parameters = 'landscape-mapper'
@@ -1587,6 +1695,10 @@ def populate_market(traders_spec, traders, shuffle, verbose):
                 elif ttype == 'PRDE':
                     parameters = {'optimizer': 'PRDE', 'k': trader_params['k'], 'F': trader_params['F'],
                                   'strat_min': trader_params['s_min'], 'strat_max': trader_params['s_max']}
+                elif ttype == 'PRJADE':
+                    parameters = {'optimizer': 'PRJADE', 'k': trader_params['k'], 'c': trader_params['c'], 
+                                  'p': trader_params['p'], 'strat_min': trader_params['s_min'], 
+                                  'strat_max': trader_params['s_max']}
                 else: # ttype=PRZI
                     parameters = {'optimizer': None, 'k': 1,
                                   'strat_min': trader_params['s_min'], 'strat_max': trader_params['s_max']}
@@ -1858,7 +1970,7 @@ def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, avg
             trader = trdrs[t]
 
             # print('PRSH/PRDE recording, t=%s' % trader)
-            if trader.ttype == 'PRSH' or trader.ttype == 'PRDE':
+            if trader.ttype == 'PRSH' or trader.ttype == 'PRDE' or trader.ttype == 'PRJADE':
                 line_str += 'id=,%s, %s,' % (trader.tid, trader.ttype)
 
                 # line_str += 'bal=$,%f, n_trades=,%d, n_strats=,2, ' % (trader.balance, trader.n_trades)
@@ -1884,10 +1996,6 @@ def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, avg
                 else:
                     # wtf?
                     sys.exit('unknown trader id type in market_session')
-
-            if trader.ttype == 'PRDE':
-                line_str += 'k=,%f, ' % trader.k
-                line_str += 'f=,%f, ' % trader.f
 
         line_str += 'best_B_id=,%s, best_B_prof=,%f, best_B_strat=,%f, ' % \
                     (best_buyer_id, best_buyer_prof, best_buyer_strat)

@@ -285,7 +285,31 @@ In effect, there is no absolute `optimal' combination that will consistently ext
 
 \section{Extending PRDE}
 
+\subsection{Motivation}
+
+The experiments showed that the behaviour of the PRDE traders was highly influenced by the differential weight coefficient $F$ and the number in population $\mathrm{NP}$.
+Moreso, it was evident that no one combination was consistently most profitable---the profitability was highly dependent on the other traders in the market, as well as the type of market.
+As such, I hypothesised that a trader similar to PRDE, that automatically controlled the value of $F$ would be far more profitable across a variety of different markets.
+
 \subsection{JADE}
+
+JADE \cite{ZhangSanderson} is a DE algorithm that automatically updates the control parameter $F$ to appropriate values, and therefore removes the requirement for a user to have prior knowledge about the relationship between $F$ and the characteristics of the optimisation problem.
+In light of this, I replaced the DE/rand/1 variant in PRDE with a variant of the JADE algorithm to produce a new trader agent: \textit{Parameterized-Response JADE} (PRJADE).
+I hypothesised that PRJADE would provide better performance across a range of different markets, since the user would not require prior knowledge of the market dynamic.
+
+To implement JADE in PRJADE, I implemented a variant of the DE/Current-to-$p$-best/1 with archive mutation strategy \cite{ZhangSanderson}.
+Each PRJADE trader maintains its own JADE system with a population of candidate $s$-values of size $\mathrm{NP}\ge 4$, which for trader $i$ in generation $g$ can be denoted by 
+\[
+    P=\{s_{i,g,1}, s_{i,g,2},...,s_{i,g,\mathrm{NP}}\}
+\]
+Once a particular strategy $s_{i,g,x}$ has been evaluated, three other distinct $s$-values are chosen: $s^p_{i,g,\text{best}}$ is randomly chosen as one of the top $p\%$ individuals in the population $P$; $s_{i,g,r_1}$ is randomly chosen from the population $P$ such that $s_{i,g,r_1}\ne s^p_{i,g,\text{best}}$; and $\tilde{s}_{i,g,r_2}$ is randomly chosen from $P\cup A$ such that $\tilde{s}_{i,g,r_2}\ne s_{i,g,r_1}\ne s^p_{i,g,\text{best}}$.
+$A$ is an `archive' set of $s$-values: those $s$-values that previously failed in the selection process.
+
+The mutation $s$-value in PRJADE is computed as follows:
+\[
+    \hat{s}_{i,g,x}=s_{i,g,x}+F_i\left(s^p_{i,g,\text{best}} - s_{i,g,x}\right) + F_i\left(s_{i,g,r_1} - \tilde{s}_{i,g,r_2}\right)
+\]
+The fitness of $\hat{s}_{i,g,x}$ is evaluated and if it performs better than $s_{i,g,x}$ then $\hat{s}_{i,g,x}$ replaces $s_{i,g,x}$ in generation $g+1$ (i.e. $s_{i,g+1,x}\leftarrow\hat{s}_{i,g,x}$); otherwise, it is discarded and the next strategy in the sequence $s_{i,g,x+1}$ is evaluated.
 
 \subsection{Results}
 
