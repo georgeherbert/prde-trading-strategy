@@ -39,46 +39,66 @@ Automated Trading, Financial Markets, Adaptive Trader-Agents, Differential Evolu
 
 \section{Introduction}
 
-Automated trading accounts for an unprecedented amount of activity in modern financial markets.
-These algorithms have the ability to execute trades at a frequency simply unachievable for humans beings; thus, the behaviour of many of these markets has significantly shifted.
-Notably, the `flash crash' in US financial markets on 6 May 2010 has been partially attributed to high-frequency trading algorithms aggressively reselling short-term positions to one another.
-Modern automated trading algorithms have the additional quality of being adaptive: they adjust their strategy to extract maximum profit from the market in which they are operating.
-These contemporary markets---in which competing adaptive algorithms are simultaneously engaged in coninual adjustment to maintain profitability---can be described as \textit{coevolutionary} systems.
+Adaptive automated trading algorithms have emerged as a transformative force in contemporary financial markets, enabling investors to harness the power of advanced computational techniques to gain a competitive edge in the marketplace.
+Through the use of complex mathematical models and sophisticated algorithms, these cutting-edge technologies are able to analyse vast amounts of market data in real-time, identifying and exploiting trading opportunities with speed and accuracy that were previously unimaginable.
+As a result, the use of adaptive automated trading algorithms has become increasingly prevalent, and has had a profound impact on the way in which financial markets operate, shaping the very fabric of the global economy.
 
-Large amounts of research has been conducted to understand the dynamics of these markets.
-Recently, Cliff introduced the \textit{Parameterized-Response Zero-Intelligence} (PRZI) \cite{PRZI} trader: a nonadaptive generalisation of Gode and Sunder's Zero-Intelligence Constrained (ZIC) \cite{GodeSunder} trader.
-The difference lies in the probability mass function (PMF) used to generate quote prices.
-Each individual ZIC trader samples their quote price from a fixed uniform distribution, whereas each PRZI trader is governed by a strategy parameter $s\in[-1, 1]\in\mathbb{R}$ that determines the PMF the trader samples from; the shape of this PMF determines how `urgent' or `relaxed' the trader acts.
+However, the use of these algorithms has generated much discussion and debate among experts, with some cautioning against their potential drawbacks.
+For example, the `flash crash' in US financial markets on 6 May 2010, which saw the Dow Jones Industrial Average plummet almost 1,000 points in a matter of minutes, has been attributed in part to high-frequency trading algorithms aggressively reselling short-term positions to one another.
+Despite these concerns, it is clear these algorithms have become an inextricable part of the contemporary financial landscape, and their continued presence is all but guaranteed.
+As such, researching these algorithms and their impact on contemporary markets is crucial for investors and researchers alike, in order to fully understand and navigate the rapidly evolving world of financial technology.
+
+This report focuses on the \textit{Parameterized-Response Zero-Intelligence with Differential Evolution} (PRDE) trader-agent, which was recently introduced by Cliff in his research paper \cite{PRDE}.
+The PRDE algorithm uses \textit{differential evolution} \cite{StornPrice} to continuously improve its trading strategy.
+In his research, Cliff demonstrated that markets containing a homogeneous population of PRDE traders were overall more economically efficient than a baseline established when all traders were using a simple stochastic hill-climbing strategy optimiser.
+
+However, the PRDE traders implemented in Cliff's experiments did not vary in their parameter values.
+This present study builds on Cliff's research by exploring the effects of altering the two key parameters of the PRDE algorithm: the \textit{number in population} $\mathrm{NP}$ and the \textit{differential weight} $F$.
+The $\mathrm{NP}$ parameter determines the number of strategies in a PRDE trader's private population, while the $F$ parameter determines the amount of perbutation applied to the strategies in the private population.
+
+This present study examines the effects of changing these key parameters on market dynamics using the \textit{Bristol Stock Exchange} (BSE) (see \cite{BSE, BSEPaper}), an open-source, high-fidelity simulation of an LOB-based financial exchange.
+By analysing the effects of changing $F$ and $\mathrm{NP}$ on the market behaviour, we can gain insights into how these algorithms influence market dynamics and how they can be optimized to maximize profitability.
+
+\section{Background}
+
+Gode and Sunder \cite{GodeSunder} revolutionised the field of experimental economics in 1993 with the advent of the \textit{Zero-Intelligence Constrained} (ZIC) trader-agent.
+These agents, which simply generate quote prices uniformly at random from a predefined range, were shown to reproduce surprisingly human-like market dynamics.
+In their original paper, Gode and Sunder defined the feasible range of trading prices as $[1,  200]$.
+As such, a buyer with a limit price of $\lambda_B$ would generate quote prices from $\mathcal{U}(1, \lambda_B)$, whilst a seller with a limit price of $\lambda_S$ would generate quote prices from $\mathcal{U}(\lambda_S, 200)$.
+Modern implementations of the ZIC model do not rely on a priori information about the feasible range, instead utilising the lowest and highest values in the order book as the bounds.
+Cliff critiqued much of Gode and Sunder's work on ZIC in \cite{ZIP}, but nonetheless the ZIC model has become a widely used tool in the study of market dynamics.
+Many subsequent \textit{zero-intelligence} (ZI) and \textit{minimal-intelligence} (MI) trader-agents have stemmed from the work of Gode and Sunder.
+
+One such ZI trader-agent, \textit{Parameterized-Response Zero-Intelligence} (PRZI) \cite{PRZI}, was recently introduced by Cliff.
+PRZI is a nonadaptive generalisation of ZIC, in which the shape of the probability mass function (PMF) used to generate quote prices is governed by a strategy parameter $s\in[-1, 1]\in\mathbb{R}$.
+This $s$-value determines the degree of `urgency' or `relaxation' in the trader's behaviour.
 As $s\to1$ the distribution is evermore biased towards `urgent' quote prices---those closest to the least profitable price for the trader, but most likely to attract a willing counterparty---conversely, as $s\to-1$, the distribution is biased towards `relaxed' quote prices---those that generate the most profit for the trader, but are considerably less likely to attract a counterparty.
 When $s=0$, the PMF is uniform, identical to that of a ZIC trader.
 
-\textit{PRZI Stochastic Hillclimber} (PRSH) \cite{PRSH} is an adaptive extension to the PRZI also introduced by Cliff.
+\textit{PRZI with Stochastic Hill-Climbing} (PRSH) \cite{PRSH} is an adaptive extension to PRZI also introduced by Cliff.
 The strategy parameter $s$ is dynamically altered by the algorithm in an attempt to increase profitability.
-Each PRSH trader maintains a private local population $\mathcal{K}$ of $k$ strategy parameters; each of which it evaluates for a specific period of time via a loop to identify which is most profitable.
-The most profitable strategy $s_0$ is `mutated' $k-1$ times; these $k$ values comprise the new elements of set $\mathcal{K}$.
+A given PRSH trader $i$ maintains a private local population $\mathcal{S}_i$ of $k$ strategy parameters; each of which it evaluates in turn via a loop to identify which is most profitable.
+The most profitable strategy is `mutated' via a stochastic mutation function to produce $k-1$ mutants, and this set of $k$ strategies constitute the new $\mathcal{S}_i$.
 
-\textit{PRZI Differential Evolution} (PRDE) \cite{PRDE} is further adaptive extension of the PRZI algorithm, and a successor to PRSH; it is the most recent algorithm published by Cliff in the PRZI `family' of trader-agents.
-It replaces the simple stochastic hill-climber with a \textit{differential evolution} (DE) optimisation system \cite{StornPrice}.
-Each PRDE trader maintains its own DE system with a population of candidate $s$-values of size $\mathrm{NP}\ge4$, which for trader $i$ can be denoted by $s_{i,1},s_{i,2},...,s_{i,\mathrm{NP}}$; the value $\mathrm{NP}$ is referred to as the \textit{number in population}.
-Once a particular strategy $s_{i,x}$ has been evaluated, three other distinct $s$-value are chosen at random from the population maintained by trader $i$: $s_{i,a}$, $s_{i,b}$ and $s_{i,c}$ such that $x\ne a\ne b\ne c$.
+\textit{PRZI with Differential Evolution} (PRDE) \cite{PRDE} is the latest adaptive extension to PRZI introduced by Cliff.
+It replaces the simple stochastic hill-climber in PRSH with a DE optimisation system \cite{StornPrice}.
+A given PRDE trader $i$ maintains its own DE system with a population of candidate $s$-values $\mathcal{S}_i$ of size $\mathrm{NP}\ge4$, which can be denoted by $s_{i,1},s_{i,2},...,s_{i,\mathrm{NP}}$.
+Once trader $i$ has evaluated a particular strategy $s_{i,x}$, three other distinct $s$-value are chosen at random: $s_{i,r_1}$, $s_{i,r_2}$ and $s_{i,r_3}$ such that $x\ne r_1\ne r_2\ne r_3$.
 A new candidate strategy $s_{i,y}$ is constructed as follows:
 \[
-s_{i,y}\leftarrow\max(\min(s_{i,a}+F_i(s_{i,b}-s_{i,c}),1), -1)
+s_{i,y}\leftarrow\max(\min(s_{i,r_1}+F_i(s_{i,r_2}-s_{i,r_3}),1), -1)
 \]
-where $F_i$ is the trader's \textit{differential weight} coefficient.
+where $F_i$ is trader $i$'s differential weight coefficient.
 The fitness of $s_{i,y}$ is evaluated and if it performs better than $s_{i,x}$ then $s_{i,y}$ replaces $s_{i,x}$; otherwise, it is discarded and the next randomly selected strategy is evaluated.
 This is very similar to the original description of the DE/rand/1 algorithm as described by Storn and Price \cite{StornPrice}, with a four key differences: $\max$ and $\min$ functions have been incorporated to constrain the output $s_{i,y}$ to the range $[-1,1]$; the conventional DE notion of crossover is not relevant because the behaviour of each PRZE trader is governed by only a single scalar value $s$; the DE algorithm in PRDE is a steady-state evolutionary algorithm as opposed to a generational evolutionary algorithm, which provides a small storage advantage; and Cliff introduced a simple vector-perbutation mechanism to deal with convergence issues that arised from $s_{i,b}-s_{i,c}$ tending very close to zero.
 The vector-perbutation mechanism works as follows: if at any time the standard deviation of the candidate $s$-values in trader $i$'s private population is less than $0.0001$, then a randomly selected candidate is provided a value drawn at random from the uniform distribution $\mathcal{U}(-1,1)$.
 This can be thought of a `mega-mutation' to the trader's set of $s$-values---a countermeasure to convergence.
 
-Cliff's conducted experiments on the \textit{Bristol Stock Exchange} (BSE) (see \cite{BSE, BSEPaper}) to analyse the coevolutionary dynamics of markets populated entirely by PRSH and PRDE traders.
-BSE is a freely-available, open-source simulation a LOB-based financial exchange.
+A market containing PRDE agents can be described as a \textit{coevolutionary} \textit{metapopulation} system, since it contains 
+
+
 Notably, Cliff identified that markets populated by PRDE traders were approximately 100\% more economically efficient than those populated by PRSH traders \cite{PRDE}.
 However, the PRDE traders implemented in Cliff's experiments did not deviate from a differential weight of $F=0.8$ and a number in population of $\mathrm{NP}=4$ (i.e. the minimum viable value).
-He stressed the importance of future work to explore the effects on the market's dynamics of altering these key parameters.
-Cliff proposed two lines of future research.
-He proposed an exploration into the effects on the market's dynamics of altering the two key parameters homogeneously---with all traders maintaining the same values of $F$ and $\mathrm{NP}$ in a given market session.
-He also proposed an arguably more intriguing exploration into effects that arise from altering the two key parameters heterogeneously---with different traders being provided different values of $F$ and $\mathrm{NP}$.
 
 \section{Homogeneous Exploration of $F$ and $\mathrm{NP}$}
 
@@ -268,16 +288,26 @@ such that each buyer had a corresponding seller with the same element, but no tw
 
 The total profit extracted from the heterogeneous market---which is indicative of market efficiency---was comfortably within the range of the homogeneous experiments at approximately 1.43 billion.
 In fact, it was within 1\% of the mean profit extracted from the homogeneous experiments in which the $(F,\mathrm{NP})$ combinations comprised the heterogeneous experiment.
-However, interestingly, there was no discernible relationship between the profitability of a trader with a given $(F, \mathrm{NP})$ combination in the homogeneous experiments and the same $(F, \mathrm{NP})$ in the heterogeneous experiment, as evident in Figure \ref{heterogeneous_homogeneous}.
+% However, interestingly, there was no discernible relationship between the profitability of a trader with a given $(F, \mathrm{NP})$ combination in the homogeneous experiments and the same $(F, \mathrm{NP})$ in the heterogeneous experiment, as evident in Figure \ref{heterogeneous_homogeneous}.
 
 \begin{figure}[htbp]
-    \centerline{\includegraphics[width=\columnwidth]{heterogeneous_homogeneous_scatter.png}}
+    \centerline{\includegraphics[width=\columnwidth]{zip_profit_grid.png}}
     \caption{
-        Relationship between the profitability per trader in the homogeneous experiments and the heterogeneous experiments.
-        Horizontal axis is the mean profit per trader in a given homogeneous experiment for a specific combination of $F$ and $\mathrm{NP}$; vertical axis is the mean profit per trader in the heterogeneous experiment for the same combination of $F$ and $\mathrm{NP}$.
+        Relationship between the differential weight coefficient $F$, the number in population $\mathrm{NP}$ and the total profit extracted by all PRDE traders in the market.
+        Format is the same as for Figure \ref{profit_grid}.
         See text for further discussion.
     }
-    \label{heterogeneous_homogeneous}
+    \label{zip}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=\columnwidth]{homo_zip_scatter.png}}
+    \caption{
+        Relationship between the profitability per trader in the homogeneous PRDE experiments and the PRDE/ZIP experiments.
+        Horizontal axis is the mean profit per trader in a given homogeneous experiment for a specific combination of $F$ and $\mathrm{NP}$; vertical axis is the mean profit per trader in a given PRDE/ZIP experiment for the same combination of $F$ and $\mathrm{NP}$.
+        See text for further discussion.
+    }
+    \label{homo_zip_scatter}
 \end{figure}
 
 This indicates that the effect of $F$ and $\mathrm{NP}$ differs according to the population of traders in the market.
@@ -294,7 +324,7 @@ As such, I hypothesised that a trader similar to PRDE, that automatically contro
 \subsection{JADE}
 
 JADE \cite{ZhangSanderson} is a DE algorithm that automatically updates the control parameter $F$ to appropriate values, and therefore removes the requirement for a user to have prior knowledge about the relationship between $F$ and the characteristics of the optimisation problem.
-In light of this, I replaced the DE/rand/1 variant in PRDE with a variant of the JADE algorithm to produce a new trader agent: \textit{Parameterized-Response JADE} (PRJADE).
+In light of this, I replaced the DE/rand/1 variant in PRDE with a variant of the JADE algorithm to produce a new trader agent: \textit{Parameterized-Response Zero-Intelligence with JADE} (PRJADE).
 I hypothesised that PRJADE would provide better performance across a range of different markets, since the user would not require prior knowledge of the market dynamic.
 
 To implement JADE in PRJADE, I implemented a variant of the DE/Current-to-$p$-best/1 with archive mutation strategy \cite{ZhangSanderson}.
@@ -307,9 +337,9 @@ $A$ is an `archive' set of $s$-values: those $s$-values that previously failed i
 
 The mutation $s$-value in PRJADE is computed as follows:
 \[
-    \hat{s}_{i,g,x}=s_{i,g,x}+F_i\left(s^p_{i,g,\text{best}} - s_{i,g,x}\right) + F_i\left(s_{i,g,r_1} - \tilde{s}_{i,g,r_2}\right)
+    s_{i,g,y}=s_{i,g,x}+F_i\left(s^p_{i,g,\text{best}} - s_{i,g,x}\right) + F_i\left(s_{i,g,r_1} - \tilde{s}_{i,g,r_2}\right)
 \]
-The fitness of $\hat{s}_{i,g,x}$ is evaluated and if it performs better than $s_{i,g,x}$ then $\hat{s}_{i,g,x}$ replaces $s_{i,g,x}$ in generation $g+1$ (i.e. $s_{i,g+1,x}\leftarrow\hat{s}_{i,g,x}$); otherwise, it is discarded and the next strategy in the sequence $s_{i,g,x+1}$ is evaluated.
+The fitness of $s_{i,g,y}$ is evaluated and if it performs better than $s_{i,g,x}$ then $s_{i,g,y}$ replaces $s_{i,g,x}$ in generation $g+1$; otherwise, it is discarded and the next strategy in the sequence $s_{i,g,x+1}$ is evaluated.
 
 \subsection{Results}
 
