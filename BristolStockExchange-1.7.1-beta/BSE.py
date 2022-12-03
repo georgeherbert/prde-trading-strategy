@@ -1301,7 +1301,7 @@ class Trader_PRZI(Trader):
 
                 # If we've just evaluated s0 we need to create then set up an s_new
                 if self.diffevol['de_state'] == 'active_s0':
-                    self.diffevol['F'] = min(np.random.standard_cauchy(1).item() * 0.1 + self.mu_F, 1)
+                    self.diffevol['F'] = min(np.random.standard_cauchy(1).item() * 0.1 + self.mu_F, 2)
                     while self.diffevol['F'] <= 0:
                         self.diffevol['F'] = np.random.standard_cauchy(1).item() * 0.1 + self.mu_F
 
@@ -1364,6 +1364,24 @@ class Trader_PRZI(Trader):
 
                         # We start analysing again from the 0th strat in the new generation
                         self.diffevol['s0_index'] = 0
+
+                        # Reintroducing DC's intervention for fully converged populations
+                        sum_ = 0.0
+                        for s in range(self.k):
+                            sum_ += self.strats[s]['stratval']
+                        strat_mean = sum_ / self.k
+                        sumsq = 0.0
+                        for s in range(self.k):
+                            diff = self.strats[s]['stratval'] - strat_mean
+                            sumsq += (diff * diff)
+                        strat_stdev = math.sqrt(sumsq / self.k)
+                        if verbose:
+                            print('t=,%.1f, MeanStrat=, %+f, stdev=,%f' % (time, strat_mean, strat_stdev))
+                        if strat_stdev < 0.0001:
+                            randindex = random.randrange(0, self.k)
+                            self.strats[randindex]['stratval'] = random.uniform(-1, 1)
+                            if verbose:
+                                print('Converged pop: set strategy %d to %+f' % (randindex, self.strats[randindex]['stratval']))
 
                     # If all s-values have not been evaluated we need to create a new s_new
                     else:
