@@ -705,7 +705,6 @@ class Trader_PRZI(Trader):
         }
         self.strats_next_gen = []
         self.strats_archive = []
-        self.mu_F = 0.5
         
 
         start_time = time
@@ -741,6 +740,7 @@ class Trader_PRZI(Trader):
                     'lut_bid': lut_bid, 'lut_ask': lut_ask}
                 )
             self.diffevol['S_F'] = []
+            self.diffevol['mu_F'] = 1
     
         if self.params == 'landscape-mapper':
             # replace seed+mutants set of strats with regularly-spaced strategy values over the whole range
@@ -1301,9 +1301,9 @@ class Trader_PRZI(Trader):
 
                 # If we've just evaluated s0 we need to create then set up an s_new
                 if self.diffevol['de_state'] == 'active_s0':
-                    self.diffevol['F'] = min(np.random.standard_cauchy(1).item() * 0.1 + self.mu_F, 2)
+                    self.diffevol['F'] = min(np.random.standard_cauchy(1).item() * 0.1 + self.diffevol['mu_F'], 2)
                     while self.diffevol['F'] <= 0:
-                        self.diffevol['F'] = np.random.standard_cauchy(1).item() * 0.1 + self.mu_F
+                        self.diffevol['F'] = np.random.standard_cauchy(1).item() * 0.1 + self.diffevol['mu_F']
 
                     strat_fitnesses = [strat['pps'] for strat in self.strats[:-1]]
                     fitness_percentile = np.percentile(strat_fitnesses, 100 - self.p)
@@ -1355,7 +1355,7 @@ class Trader_PRZI(Trader):
 
                         
                         lehmer = sum([f ** 2 for f in self.diffevol['S_F']]) / (sum(self.diffevol['S_F']) + 1e-8)
-                        self.mu_F = (1 - self.c) * self.mu_F + self.c * lehmer
+                        self.diffevol['mu_F'] = (1 - self.c) * self.diffevol['mu_F'] + self.c * lehmer
 
                         # We copy the next generation into the old generation
                         self.strats = [i.copy() for i in self.strats_next_gen]
@@ -1971,6 +1971,21 @@ def customer_orders(time, last_update, traders, trader_stats, os, pending, verbo
 # one session in the market
 def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, avg_bals, dump_all, verbose):
 
+    def dump_jade_frame(time, jadefile, trdrs):
+        line_str = 't=,%.0f, ' % time
+
+        for t in traders:
+            trader = trdrs[t]
+
+            if trader.ttype == 'PRJADE':
+                line_str += 'id=,%s, %s, ' % (trader.tid, trader.ttype)
+
+                mu_F = trader.diffevol['mu_F']
+                line_str += 'mu_F,=%f, ' % mu_F
+
+        line_str += '\n'
+        jadefile.write(line_str)
+        jadefile.flush()
 
     def dump_strats_frame(time, stratfile, trdrs):
         # write one frame of strategy snapshot
@@ -2045,6 +2060,8 @@ def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, avg
 
     lobframes = open(sess_id + '_LOB_frames.csv', 'w')
     lobframes = None # this disables writing of the LOB frames (which can generate HUGE files)
+
+    jade_dump = open(sess_id + '_jade.csv', 'w')
 
     # initialise the exchange
     exchange = Exchange()
@@ -2128,6 +2145,7 @@ def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, avg
             if int(time) % frame_rate == 0 and int(time) not in frames_done:
                 # print one more frame to strategy dumpfile
                 dump_strats_frame(time, strat_dump, traders)
+                dump_jade_frame(time, jade_dump, traders)
                 # record that we've written this frame
                 frames_done.add(int(time))
 
@@ -2136,6 +2154,7 @@ def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, avg
     # session has ended
 
     strat_dump.close()
+    jade_dump.close()
 
     if lobframes is not None:
             lobframes.close()

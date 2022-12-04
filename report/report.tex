@@ -14,7 +14,7 @@
 
 \begin{document}
 
-\title{Evaluation of the Parameterized-Response Differential Evolution Trader-Agent}
+\title{Differential Weight and Population Size of PRDE Traders: An Analysis of their Impact on Market Dynamics}
 
 \author{\IEEEauthorblockN{George Herbert}
 \IEEEauthorblockA{\textit{Department of Computer Science} \\
@@ -26,7 +26,7 @@ cj19328@bristol.ac.uk}
 \maketitle
 
 \begin{abstract}
-This paper reports results from market experiments containing Paramaterized-Response Differential Evolution (PRDE) trader-agents.
+This paper reports results from market experiments containing Paramaterized-Response Zero-Intelligence with Differential Evolution (PRDE) trader-agents.
 Each PRDE trader-agent in a market simultaneously uses differential evolution (DE) to adapt their own trading strategy to maximise profitability.
 The DE algorithm within each PRDE trader is governed by two parameters: the differential weight coefficient $F$ and the number in population $\mathrm{NP}$.
 Markets containing a homogeneous population of PRDE traders exhibit different dynamics depending on the values of $F$ and $\mathrm{NP}$
@@ -265,26 +265,29 @@ Therefore, in homogeneous populations of PRDE traders with larger values of $\ma
 As a result, it takes significantly longer for the PRDE traders to accumulate a large number of $s$-values greater than 0.5, and as such the market is less efficient.
 On the extreme end of the spectrum, as $\mathrm{NP}\to\infty$, the PRDE traders in the market would be completely unable to improve on the initial random conditions of the market.
 
-\section{Heterogeneous Exploration of $F$ and $\mathrm{NP}$}
+\section{PRDE in a Heterogeneous Market}
 
-The experiments conducted to this point all involved homogeneous populations of PRDE traders in a simplistic market with perfect elasticity of supply and demand.
-The results clearly showed that the markets containing PRDE traders with large values of $F$ and moderately large values of $\mathrm{NP}$, such as $F=2$ and $\mathrm{NP}=14$, managed to extract the most profit from the market.
-However, this was simply because these combinations of $F$ and $\mathrm{NP}$ influenced the DE algorithm to sustain more highly `urgent' $s$-values.
-Contemporary real-world markets are not comprised of homogeneous populations of automated trading-agents; real-world markets contain a multitude of different trading algorithms, all using different adaptive algorithms to maximise profitability, as well as a number of human traders.
-Thus, I sought to investigate whether the profitability of a given combination of $(F, \mathrm{NP})$ in a homogeneous market was correlated to the profitability of the same combination in a heterogeneous market.
-To do so, I ran a follow-up experiment with a very similar setup to that described previously to control for extraneous variables.
-I similarly used BSE to simulate a financial market with $N_T=30$ PRDE traders with an equal number of buyers $N_B$ and sellers $N_S$ (i.e. $N_B=N_S=15$).
-I used a limit price of \$140 per unit for the $N_B$ buyers and \$60 per unit for the $N_S$ sellers, and ran the experiment for 100 simulated days.
-In fact, the only difference was the fact that I populated the market with heterogeneous PRDE traders rather than homogeneous PRDE traders.
-I supplied each of the $N_B$ buyers and $N_S$ sellers an $(F,\mathrm{NP})$ combination from the 15 elements in the following set:
-\[
-  \left\{ (F, \mathrm{NP}) \mid F\in\{0, 0.4, 0.8, 1.6, 2\} \land \mathrm{NP} \in \{4, 12, 20 \} \right\}
-\]
-such that each buyer had a corresponding seller with the same element, but no two buyers or sellers had the same combination.
+The experiments conducted in the previous section were designed to build on the work in \cite{PRDE}.
+By using different combinations of $F$ and $\mathrm{NP}$ in each experiment, I was able to study the impact of these parameters on market efficiency.
+The results showed that the most profitable combination of $F$ and $\mathrm{NP}$ was 22\% more profitable than the least profitable.
 
-The total profit extracted from the heterogeneous market---which is indicative of market efficiency---was comfortably within the range of the homogeneous experiments at approximately 1.43 billion.
-In fact, it was within 1\% of the mean profit extracted from the homogeneous experiments in which the $(F,\mathrm{NP})$ combinations comprised the heterogeneous experiment.
-% However, interestingly, there was no discernible relationship between the profitability of a trader with a given $(F, \mathrm{NP})$ combination in the homogeneous experiments and the same $(F, \mathrm{NP})$ in the heterogeneous experiment, as evident in Figure \ref{heterogeneous_homogeneous}.
+However, the experimental setup was simplistic: the markets were homogeneously populated and had perfect elasticity of supply and demand.
+While this provided highly interpretable results and an important insight into the influence of $F$ and $\mathrm{NP}$ on a homogeneous coevolutionary metapopulation of PRDE traders, it did not accurately represent most contemporary financial markets.
+Most markets contain a population of distinct adaptive automated trading algorithms, and do not have perfect elasticity of supply and demand.
+As such, I conducted a series of follow-up experiments that better represented these contemporary markets, to understand if there was an association between the performance of a specific combination of $F$ and $\mathrm{NP}$ between both sets of experiments.
+By doing so, I sought to identify whether a definitive `optimal' combination existed that would consistenly provide maximum profitability, irregardless of the market.
+
+In each market simulation on BSE, I implemented a population of $N_T=20$ traders with an equal number of buyers $N_B$ and sellers $N_S$ (i.e. $N_B=N_S=10$).
+To introduce a form of heterogeneity into the market, each of the $N_B$ buyers and $N_S$ sellers were comprised of five PRDE trader-agents and five Zero-Intelligence Plus (ZIP) \cite{ZIP} trader-agents.
+ZIP is a widely-studied MI agent that employs an elementary form of machine learning, and was one of the first trader-agents demonstrated to perform better than humans \cite{DasHansonKephartTesauro}.
+All PRDE traders in a given experiment had identical values of $F$ and $\mathrm{NP}$.
+To better represent the supply and demand curves of contemporary financial markets, the $N_B$ buyers and $N_S$ sellers were provided distinct, evenly-spaced limit prices in the range $[60, 140]$.
+In the simulation, after two traders engaged in a trade, they were rendered inactive until their stock was replenished, which occurred approximately every five simulated seconds.
+I ran each experiment for 100 simulated days.
+
+Figure \ref{zip_profit_grid} displays a heatmap showing the combined profit extracted from the market by the population of 10 PRDE traders for each experiment.
+The difference in profitability for different combinations of $F$ and $\mathrm{NP}$ was significant: the most profitable combination of $F$ and $\mathrm{NP}$ extracted 322\% more profit on average than the least profitable combination.
+While some of this effect can likely be attributed to the noise inherent in market simulations, it suggests that one would almost require a priori information about the market to deploy a PRDE trader with a near optimal choice of $F$ and $\mathrm{NP}$.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=\columnwidth]{zip_profit_grid.png}}
@@ -293,51 +296,60 @@ In fact, it was within 1\% of the mean profit extracted from the homogeneous exp
         Format is the same as for Figure \ref{profit_grid}.
         See text for further discussion.
     }
-    \label{zip}
+    \label{zip_profit_grid}
 \end{figure}
+
+Several loose similarities can be observed with the heapmap from the previous set of experiments in Figure \ref{profit_grid}.
+However, there is no discerible statistically significant relationship between the profitability of a PRDE trader with a given combination of $F$ and $\mathrm{NP}$ in the homogeneous experiments and the same combination in the heterogeneous experiments, as evident in Figure \ref{homo_zip_scatter}.
+This indicates that the effect of $F$ and $\mathrm{NP}$ is highly dependent on the behaviour of the other traders, as well as the supply and demand schedules of the market.
+This is a common theme in the wider literature on adaptive autonomous trader-agents, in that the `superiority' of any given algorithm is contingent on the other trader-agents in the market.
+Therefore, while there are clearly values of $F$ and $\mathrm{NP}$ that appear to produce consistently poor results, namely $F=0$, I cannot conclusively say that there exists any single `optimal' combination that will consistently extract the maximum profit.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=\columnwidth]{homo_zip_scatter.png}}
     \caption{
-        Relationship between the profitability per trader in the homogeneous PRDE experiments and the PRDE/ZIP experiments.
-        Horizontal axis is the mean profit per trader in a given homogeneous experiment for a specific combination of $F$ and $\mathrm{NP}$; vertical axis is the mean profit per trader in a given PRDE/ZIP experiment for the same combination of $F$ and $\mathrm{NP}$.
+        Relationship between the profitability per trader in the homogeneous PRDE experiments and the heterogeneous experiments.
+        Horizontal axis is the mean profit per trader in a given homogeneous experiment for a specific combination of $F$ and $\mathrm{NP}$; vertical axis is the mean profit per trader in a given heterogeneous experiment with the same combination of $F$ and $\mathrm{NP}$.
         See text for further discussion.
     }
     \label{homo_zip_scatter}
 \end{figure}
 
-This indicates that the effect of $F$ and $\mathrm{NP}$ differs according to the population of traders in the market.
-In effect, there is no absolute `optimal' combination that will consistently extract the maximum profit, because the behaviour of the other traders in the market strongly influences the control that $F$ and $\mathrm{NP}$ have.
-
 \section{Extending PRDE}
 
-\subsection{Motivation}
+\subsection{PRZI with JADE}
 
-The experiments showed that the behaviour of the PRDE traders was highly influenced by the differential weight coefficient $F$ and the number in population $\mathrm{NP}$.
-Moreso, it was evident that no one combination was consistently most profitable---the profitability was highly dependent on the other traders in the market, as well as the type of market.
-As such, I hypothesised that a trader similar to PRDE, that automatically controlled the value of $F$ would be far more profitable across a variety of different markets.
-
-\subsection{JADE}
-
-JADE \cite{ZhangSanderson} is a DE algorithm that automatically updates the control parameter $F$ to appropriate values, and therefore removes the requirement for a user to have prior knowledge about the relationship between $F$ and the characteristics of the optimisation problem.
-In light of this, I replaced the DE/rand/1 variant in PRDE with a variant of the JADE algorithm to produce a new trader agent: \textit{Parameterized-Response Zero-Intelligence with JADE} (PRJADE).
-I hypothesised that PRJADE would provide better performance across a range of different markets, since the user would not require prior knowledge of the market dynamic.
-
-To implement JADE in PRJADE, I implemented a variant of the DE/Current-to-$p$-best/1 with archive mutation strategy \cite{ZhangSanderson}.
-Each PRJADE trader maintains its own JADE system with a population of candidate $s$-values of size $\mathrm{NP}\ge 4$, which for trader $i$ in generation $g$ can be denoted by 
+In light of the problems with PRDE, I introduce a new MI trader-agent: \textit{PRZI with JADE} (PRJADE), that replaces the DE algorithm in PRDE with a variation of JADE \cite{ZhangSanderson}.
+JADE is a generational DE algorithm, and as such a given trader $i$ maintains a population of candidate $s$-values for generation $g$ denoted $\mathcal{S}_{i,g}$.
+Each $s$-value in $\mathcal{S}_{i,g}$, denoted $s_{i,g,1}, s_{i,g,2}, ..., s_{i,g,\mathrm{NP}}$, is evaluated in-turn to produce a population of candidate $s$-values for $\mathcal{S}_{i,g+1}$.
+Once strategy $s_{i,g,x}$ has been evaluated, three other distinct $s$-values are chosen: $s^p_{i,g,\text{best}}$ is randomly chosen as one of the top $p\%$ individuals in the population $\mathcal{S}_{i,g}$; $s_{i,g,r_1}$ is randomly chosen from the population $\mathcal{S}_{i,g}$ such that $s_{i,g,r_1}\ne s^p_{i,g,\text{best}}$; and $\tilde{s}_{i,g,r_2}$ is randomly chosen from $\mathcal{S}_{i,g}\cup\mathcal{A}$ such that $\tilde{s}_{i,g,r_2}\ne s_{i,g,r_1}\ne s^p_{i,g,\text{best}}$.
+$\mathcal{A}$ is an `archive' set of $s$-values: those $s$-values that previously failed in the selection process.
+Having selected these three values, a new candidate strategy $\hat{s}_{i,g,x}$ is constructed as follows:
 \[
-    P=\{s_{i,g,1}, s_{i,g,2},...,s_{i,g,\mathrm{NP}}\}
+    \hat{s}_{i,g,x}\leftarrow s_{i,g,x}+F_{i,x}\left(s^p_{i,g,\text{best}} - s_{i,g,x}\right) + F_{i,x}\left(s_{i,g,r_1} - \tilde{s}_{i,g,r_2}\right)
 \]
-Once a particular strategy $s_{i,g,x}$ has been evaluated, three other distinct $s$-values are chosen: $s^p_{i,g,\text{best}}$ is randomly chosen as one of the top $p\%$ individuals in the population $P$; $s_{i,g,r_1}$ is randomly chosen from the population $P$ such that $s_{i,g,r_1}\ne s^p_{i,g,\text{best}}$; and $\tilde{s}_{i,g,r_2}$ is randomly chosen from $P\cup A$ such that $\tilde{s}_{i,g,r_2}\ne s_{i,g,r_1}\ne s^p_{i,g,\text{best}}$.
-$A$ is an `archive' set of $s$-values: those $s$-values that previously failed in the selection process.
+The fitness of $s_{i,g,y}$ is evaluated and if it performs better than $s_{i,g,x}$ then $s_{i,g,y}$ is placed in index $x$ in $\mathcal{S}_{i,g+1}$. Otherwise, it is discarded and the next strategy in the sequence $s_{i,g,x+1}$ is evaluated.
 
-The mutation $s$-value in PRJADE is computed as follows:
+The main benefit that PRJADE provides over PRDE is that a PRJADE trader does not need to be provided a differential weight coefficient.
+This is because a given PRJADE trader $i$ generates a new $F_{i,x}$ for each candidate strategy $\hat{s}_{i,g,x}$ in generation $g$ according to a Cauchy distribution with location parameter $\mu_{F_i}$ and scale parameter $0.1$, which is then truncated to be $2$ if $F_{i,x}>2$ or regenerated if $F_{i,x}<0$.
+Sampling $F_{i,y}$ from the Cauchy distribution helps produce diverse differential weights centered around $\mu_{F_i}$, which can be thought of as a `best guess' at the optimal value for the differential weight.
+$\mu_{F_i}$ is initialised to 1 at the start of the market session, but is then updated at the end of each generation using the following rule:
 \[
-    s_{i,g,y}=s_{i,g,x}+F_i\left(s^p_{i,g,\text{best}} - s_{i,g,x}\right) + F_i\left(s_{i,g,r_1} - \tilde{s}_{i,g,r_2}\right)
+    \mu_{F_i}\leftarrow (1-c_i)\mu_{F_i} + c_i\frac{\sum_{F\in \mathcal{F}_i} F^2}{\sum_{F\in\mathcal{F}_i} F}
 \]
-The fitness of $s_{i,g,y}$ is evaluated and if it performs better than $s_{i,g,x}$ then $s_{i,g,y}$ replaces $s_{i,g,x}$ in generation $g+1$; otherwise, it is discarded and the next strategy in the sequence $s_{i,g,x+1}$ is evaluated.
+Where $\mathcal{F}_i$ is a set of `successful' differential weights---those that yielded candidate stratgies that increased profitability in generation $g$ for trader $i$.
 
-\subsection{Results}
+Whilst PRJADE no longer requires the differential weight to be explicitly specified, it requires two new values: the rate of parameter adaption $c$, and the greediness of the mutation strategy $p$.
+However, $c$ and $p$ have been shown to be insensitive to different problems in \cite{ZhangSanderson}, so offer an advantage over the extremely sensitive $F$.
+
+\subsection{PRJADE vs PRDE}
+
+I took inspiration from IBM's balanced-group tests \cite{TesauroDas} to compare the performance of PRJADE against PRDE.
+I ran a set of experiments on BSE with $N_T=20$ traders, split evenly between $N_B=10$ buyers and $N_S=10$ sellers.
+The $N_B$ buyers and $N_S$ sellers were each comprised of five PRDE traders and five PRJADE traders.
+Both the buyers and sellers were provided distinct, evenly-spaced limit prices in the range $[60,140]$.
+In the simulation, after two traders engaged in a trade, they were rendered inactive until their stock was replenished, which occurred approximately every five simulated seconds.
+I ran each experiment for 100 simulated days.
 
 \section{Conclusion}
 

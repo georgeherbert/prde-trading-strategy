@@ -3,9 +3,10 @@ import sys
 from BSE import market_session
 
 f = round(float(sys.argv[1]), 1)
+val = sys.argv[2]
 
 sellers_spec = [
-    ('PRJADE', 5, {'k': 14, 's_min': -1, 's_max': 1, 'p': 12.5, 'c': 0.125}),
+    ('PRJADE', 5, {'k': 14, 's_min': -1, 's_max': 1, 'p': 20, 'c': 0.2}),
     ('PRDE', 5, {'k': 14, 's_min': -1, 's_max': 1, 'F': f})
 ]
 buyers_spec = sellers_spec
@@ -24,7 +25,7 @@ order_interval = 5
 order_sched = {'sup': supply_schedule, 'dem': demand_schedule,
                 'interval': order_interval, 'timemode': 'drip-jitter'}
 
-trial_id = f'prjade_prde_{f}'
+trial_id = f'prjade_prde_{f}_{val}'
 tdump = open(f'{trial_id}_avg_balance.csv','w')
 dump_all = False
 verbose = False
