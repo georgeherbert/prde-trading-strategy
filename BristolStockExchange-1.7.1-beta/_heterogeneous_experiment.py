@@ -14,7 +14,7 @@ sup_range = (60, 60)
 dem_range = (140, 140)
 
 start_time = 0
-end_time = 60 * 60 * 24 * 100
+end_time = 60 * 60 * 24 * 50
 supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [sup_range], 'stepmode': 'fixed'}]
 demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [dem_range], 'stepmode': 'fixed'}]
 

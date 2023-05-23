@@ -5,7 +5,9 @@ from BSE import market_session
 k = int(sys.argv[1])
 f = round(float(sys.argv[2]), 2)
 
-sellers_spec = [('PRDE', 15, {'k': k, 's_min': -1, 's_max': 1, 'F': f})]
+print(f"NP = {k}, F = {f}")
+
+sellers_spec = [('PRDE', 10, {'k': k, 's_min': -1, 's_max': 1, 'F': f})]
 buyers_spec = sellers_spec
 
 traders_spec = {'sellers': sellers_spec, 'buyers': buyers_spec}
@@ -14,7 +16,7 @@ sup_range = (60, 60)
 dem_range = (140, 140)
 
 start_time = 0
-end_time = 60 * 60 * 24 * 100
+end_time = 60 * 60 * 24 * 50 # 50 days
 supply_schedule = [{'from': start_time, 'to': end_time, 'ranges': [sup_range], 'stepmode': 'fixed'}]
 demand_schedule = [{'from': start_time, 'to': end_time, 'ranges': [dem_range], 'stepmode': 'fixed'}]
 
