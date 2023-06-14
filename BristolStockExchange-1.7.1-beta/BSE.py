@@ -1303,7 +1303,7 @@ class Trader_PRZI(Trader):
                 if self.diffevol['de_state'] == 'active_s0':
                     self.diffevol['F'] = min(np.random.standard_cauchy(1).item() * 0.1 + self.diffevol['mu_F'], 2)
                     while self.diffevol['F'] <= 0:
-                        self.diffevol['F'] = np.random.standard_cauchy(1).item() * 0.1 + self.diffevol['mu_F']
+                        self.diffevol['F'] = min(np.random.standard_cauchy(1).item() * 0.1 + self.diffevol['mu_F'], 2)
 
                     strat_fitnesses = [strat['pps'] for strat in self.strats[:-1]]
                     fitness_percentile = np.percentile(strat_fitnesses, 100 - self.p)
